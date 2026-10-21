@@ -3,5 +3,13 @@
         "target": "http://localhost:8080",
         "secure": false,
         "changeOrigin": true
+    },
+    "/weather-api": {
+        "target": "https://aviationweather.gov",
+        "secure": true,
+        "changeOrigin": true,
+        "pathRewrite": {
+            "^/weather-api": ""
+        }
     }
 }

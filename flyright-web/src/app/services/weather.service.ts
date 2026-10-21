@@ -28,7 +28,7 @@ export interface MetarBriefing {
 })
 export class WeatherService {
   // Free NOAA Aviation Weather Center public API endpoint
-  private readonly metarBaseUrl = 'https://aviationweather.gov/api/data/metar';
+  private readonly metarBaseUrl = '/weather-api/api/data/metar';
 
   constructor(private http: HttpClient) {}
 
