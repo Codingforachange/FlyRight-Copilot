@@ -1,0 +1,353 @@
+
+  <div class="cockpit-container">
+  <header class="header">
+    <div class="header-left">
+      <div class="badge">{{ missionForm.aircraftModelCode }} | {{ missionForm.tailNumber }}</div>
+      <span class="mission-tag" [class.xc]="missionForm.flightType === 'CROSS_COUNTRY'">
+        {{ missionForm.flightType === 'PATTERN' ? 'LOCAL PATTERN' : 'CROSS COUNTRY' }}
+      </span>
+      <span class="airspace-tag">
+        {{ missionForm.departureIcao }} ({{ missionForm.departureTowered ? 'TOWERED' : 'CTAF' }})
+        <ng-container *ngIf="missionForm.flightType === 'CROSS_COUNTRY' && missionForm.destinationIcao">
+          ➔ {{ missionForm.destinationIcao }} ({{ missionForm.destinationTowered ? 'TWR' : 'CTAF' }})
+        </ng-container>
+      </span>
+    </div>
+
+    <div class="pilot-callsign-display">
+      PIC: {{ currentPilot?.name || 'Pilot in Command' }}
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="ctrl-btn" (click)="toggleAudio()">
+        {{ isAudioMuted ? 'Audio Off' : 'Audio On' }}
+      </button>
+      <button type="button" class="ctrl-btn btn-comms" (click)="toggleRadioDrawer()">
+        {{ showRadioDrawer ? 'Close Radios' : 'ATC Comms' }}
+      </button>
+      <button type="button" class="ctrl-btn btn-danger" (click)="resetAll()">
+        Reset All
+      </button>
+    </div>
+  </header>
+
+   <!-- LIVE METAR & SURFACE BRIEFING STRIP -->
+  <div class="metar-strip" *ngIf="currentMetar">
+    <div class="metar-badge" [attr.data-cat]="currentMetar.flightCategory">
+      {{ currentMetar.flightCategory }}
+    </div>
+    <div class="metar-data">
+      <span class="metar-element"><strong>Wind:</strong> {{ currentMetar.windDirection }}° &#64; {{ currentMetar.windSpeed }} kt</span>
+      <span class="metar-element"><strong>Vis:</strong> {{ currentMetar.visibility }} SM</span>
+      <span class="metar-element"><strong>Altimeter:</strong> {{ currentMetar.altimeter | number:'1.2-2' }} inHg</span>
+      <span class="metar-element"><strong>Temp/Dew:</strong> {{ currentMetar.temperature }}°C / {{ currentMetar.dewpoint }}°C</span>
+    </div>
+    <div class="runway-analysis" *ngIf="currentMetar && currentMetar.runwayAnalysis">
+      <span 
+        *ngFor="let rwy of currentMetar.runwayAnalysis" 
+        class="rwy-pill" 
+        [class.favorable]="rwy.isFavorable">
+        <strong>{{ rwy.runway }}:</strong> 
+        {{ formatRunwayWind(rwy) }}
+        <span *ngIf="rwy.crosswind !== 0">| {{ rwy.crosswind }} kt XW</span>
+      </span>
+    </div>
+    <div class="raw-metar">{{ currentMetar.rawMetar }}</div>
+  </div>
+
+  <div *ngIf="isLoading" class="status-msg">
+    Loading checks from flight database...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-msg">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Horizontal Phase Tabs -->
+  <div class="phase-selector" *ngIf="!isLoading && checklists.length > 0">
+    <button 
+      *ngFor="let cl of checklists; let i = index"
+      class="phase-tab"
+      [class.active]="i === activeChecklistIndex"
+      (click)="selectPhase(i)">
+      {{ cl.title }}
+    </button>
+  </div>
+
+   <!-- ATC Comms Quick Reference Drawer -->
+  <div class="comms-panel" *ngIf="showRadioDrawer">
+    <div class="comms-header">
+      <span class="comms-badge">VFR STANDARD COMM TRANSMISSIONS</span>
+      <h3>Tower & Ground Scripts (Tail: {{ pilotCallsign }})</h3>
+    </div>
+    <div class="comms-grid">
+      <div class="comm-card" *ngFor="let call of activeRadioCalls">
+        <div class="comm-top">
+          <span class="comm-situation">{{ call.situation }}</span>
+          <span class="comm-freq">{{ call.frequency }} MHz</span>
+        </div>
+        <div class="comm-body">
+          <p><strong>Pilot:</strong> "{{ call.pilotTransmission() }}"</p>
+          <p><strong>ATC:</strong> "{{ call.atcResponse }}"</p>
+          <p class="comm-readback"><strong>Readback:</strong> "{{ call.readback }}"</p>
+        </div>
+        <button type="button" class="comm-listen-btn" (click)="playTransmissionAudio(call.pilotTransmission())">
+          ▶ Test Readout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single Active Checklist Card -->
+  <div *ngIf="!isLoading && checklists.length > 0" class="checklist-card">
+    <div class="card-header">
+      <div class="voice-controls">
+        <button
+          type="button"
+          class="voice-btn"
+          [class.listening]="isListening"
+          (click)="startChecklistVoiceRun()">
+          <span class="mic-icon">🎙️</span>
+          {{ isListening ? 'Listening for response...' : 'Start Voice Challenge' }}
+        </button>
+        <span class="voice-hint" *ngIf="!isListening">
+          Challenge-and-response mode (hands-free)
+        </span>
+      </div>
+      <h2>{{ checklists[activeChecklistIndex]?.title }}</h2>
+      <span class="phase-tag">{{ checklists[activeChecklistIndex].phase }}</span>
+      <!-- Cockpit Instrument Dial Gauge -->
+      <div class="instrument-gauge">
+        <svg viewBox="0 0 180 110" class="gauge-svg">
+          <defs>
+            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ff4757" />
+              <stop offset="45%" stop-color="#ffa502" />
+              <stop offset="85%" stop-color="#2ed573" />
+              <stop offset="100%" stop-color="#00d2d3" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background Track Arc -->
+          <path d="M 20 95 A 70 70 0 0 1 160 95"
+                fill="none"
+                stroke="rgba(255,255,255,0.12)"
+                stroke-width="12"
+                stroke-linecap="round" /> 
+            
+          <!-- Progress Arc -->
+          <path d="M 20 95 A 70 70 0 0 1 160 95"
+                fill="none"
+                stroke="url(#gaugeGradient)"
+                stroke-width="12"
+                stroke-linecap="round"
+                stroke-dasharray="220"
+                [attr.stroke-dashoffset]="strokeOffset"
+                style="transition: stroke-dashoffset 0.4s ease;" />
+
+          <!-- Pivot Pin -->
+          <circle cx="90" cy="95" r="7" fill="#ffffff" />
+
+          <line x1="90" y1="95" x2="90" y2="35"
+                stroke="#ffffff"
+                stroke-width="3"
+                stroke-linecap="round"
+                [style.transform]="'rotate(' + needleRotation + 'deg)'"
+                style="transform-origin: 90px 95px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);" />
+        </svg>
+        <div class="gauge-readout">
+          <span class="readout-pct">{{ currentPhaseProgress }}%</span>
+          <span class="readout-sub">{{ completedCount }}/{{ totalCount }} COMPLETE</span>
+        </div>
+      </div> 
+    </div>
+  </div>
+
+    <ul class="item-list">
+      <li 
+        *ngFor="let item of checklists[activeChecklistIndex]?.items" 
+        class="item-row"
+        [class.completed]="item.isCompleted"
+        (click)="toggleItem(item)">
+        <div class="checkbox">
+          <span *ngIf="item.isCompleted">✓</span>
+        </div>
+        <div class="item-details">
+          <span class="challenge">{{ item.challenge }}</span>
+          <span class="response">{{ item.response }}</span>
+        </div>
+      </li>
+    </ul>
+    <div class="card-footer" *ngIf="isCurrentPhaseComplete()">
+      <button class="next-phase-btn" (click)="nextPhase()">
+        Complete & Advance: {{ (checklists[activeChecklistIndex + 1] ? checklists[activeChecklistIndex + 1].title : 'Pre-Flight Completed') }} 
+      </button>
+    </div>
+    
+  <!-- 1. PILOT SUBSCRIPTION & AUTH GATE -->
+  <div class="modal-overlay" *ngIf="showAuthModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="badge-tag">MEMBER GATE</div>
+        <h2>{{ authMode === 'register' ? 'Pilot Registration & Subscription' : 'Welcome Back, Aviator' }}</h2>
+        <p class="modal-sub">
+          {{ authMode === 'register' 
+              ? 'Set up your electronic flight bag profile to sync mission data and pre-flights.' 
+              : 'Sign in to access your flight logs and mission profiles.' }}
+        </p>
+      </div>
+
+      <form (ngSubmit)="submitAuth()">
+        <div class="form-group" *ngIf="authMode === 'register'">
+          <label>Pilot Name (PIC)</label>
+          <input type="text" [(ngModel)]="pilotForm.name" name="pilotName" placeholder="e.g. Capt. Mike Pelino" required />
+        </div>
+
+        <div class="form-group">
+          <label>Pilot Email Address</label>
+          <input type="email" [(ngModel)]="pilotForm.email" name="pilotEmail" placeholder="pilot@flyright.aero" required />
+        </div>
+
+        <div class="form-group" *ngIf="authMode === 'register'">
+          <label>Flight Experience Stage</label>
+          <select [(ngModel)]="pilotForm.experienceStage" name="pilotStage">
+            <option value="Student Pilot (Pre-Solo)">Student Pilot (Pre-Solo)</option>
+            <option value="Student Pilot (Solo Cross-Country)">Student Pilot (Solo Cross-Country)</option>
+            <option value="Checkride Prep">Checkride Prep</option>
+            <option value="Sport Pilot">Sport Pilot (LSA / MOSAIC)</option>
+            <option value="Private Pilot (PPL)">Private Pilot (PPL)</option>
+          </select>
+        </div>
+
+        <div class="error-banner" *ngIf="authError">
+          {{ authError }}
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">
+            {{ authMode === 'register' ? 'Activate Subscription & Continue' : 'Sign In' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="auth-toggle">
+        <span *ngIf="authMode === 'register'">
+          Already subscribed? <a (click)="authMode = 'login'; authError = ''">Sign in here</a>
+        </span>
+        <span *ngIf="authMode === 'login'">
+          New student pilot? <a (click)="authMode = 'register'; authError = ''">Create profile</a>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PRE-FLIGHT MISSION SETUP MODAL -->
+  <div class="modal-overlay" *ngIf="showMissionModal">
+    <div class="modal-card mission-card">
+      <div class="modal-header">
+        <div class="badge-tag">MISSION DISPATCH</div>
+        <h2>Pre-Flight Briefing Setup</h2>
+        <p class="modal-sub">Configure your aircraft, flight type, and local airspace rules.</p>
+      </div>
+
+      <form (ngSubmit)="confirmMission()">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Aircraft Model</label>
+            <select [(ngModel)]="missionForm.aircraftModelCode" name="aircraftModel">
+              <option value="C172S">Cessna 172S Skyhawk</option>
+              <option value="C152">Cessna 152</option>
+              <option value="PA28">Piper PA-28 Cherokee</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label>Tail Number</label>
+            <input type="text" [(ngModel)]="missionForm.tailNumber" name="tailNum" placeholder="N734SP" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Flight Type</label>
+          <div class="radio-group">
+            <label class="radio-pill" [class.active]="missionForm.flightType === 'PATTERN'">
+              <input type="radio" [(ngModel)]="missionForm.flightType" name="flightType" value="PATTERN" />
+              Local Traffic Pattern
+            </label>
+            <label class="radio-pill" [class.active]="missionForm.flightType === 'CROSS_COUNTRY'">
+              <input type="radio" [(ngModel)]="missionForm.flightType" name="flightType" value="CROSS_COUNTRY" />
+              Cross Country (XC)
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Departure Airport (ICAO)</label>
+            <input type="text" [(ngModel)]="missionForm.departureIcao" name="depIcao" placeholder="e.g. KBTP" required />
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="depTowered" />
+              Towered Airspace (Class D/C/B)
+            </label>
+          </div>
+
+          <div class="form-group flex-1" *ngIf="missionForm.flightType === 'CROSS_COUNTRY'">
+            <label>Destination Airport (ICAO)</label>
+            <input type="text" [(ngModel)]="missionForm.destinationIcao" name="destIcao" placeholder="e.g. KAGC" />
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="missionForm.destinationTowered" name="destTowered" />
+              Towered Airspace
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">
+            Confirm Briefing & Initialize Gauges
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- ATC COMMS SLIDE-OUT DRAWER -->
+  <aside class="radio-drawer" [class.open]="showRadioDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <h3>ATC Radio Phraseology</h3>
+        <span class="drawer-badge">{{ missionForm.departureTowered ? 'TOWERED' : 'CTAF / NON-TOWERED' }}</span>
+      </div>
+      <button type="button" class="close-drawer-btn" (click)="toggleRadioDrawer()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="radio-card" *ngFor="let call of activeRadioCalls">
+        <div class="radio-card-header">
+          <span class="situation-label">{{ call.situation }}</span>
+          <span class="freq-tag">{{ call.frequency }}</span>
+        </div>
+
+        <div class="transmission-box pilot-box">
+          <div class="box-label">PILOT TRANSMISSION:</div>
+          <div class="transmission-text">"{{ call.pilotTransmission() }}"</div>
+          <button type="button" class="listen-btn" (click)="playTransmissionAudio(call.pilotTransmission())">
+            🔊 Read Callout
+          </button>
+        </div>
+
+        <div class="transmission-box atc-box" *ngIf="call.atcResponse">
+          <div class="box-label">EXPECTED ATC RESPONSE:</div>
+          <div class="transmission-text">"{{ call.atcResponse }}"</div>
+        </div>
+
+        <div class="transmission-box readback-box" *ngIf="call.readback">
+          <div class="box-label">PILOT READBACK:</div>
+          <div class="transmission-text">"{{ call.readback }}"</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- BACKDROP OVERLAY -->
+  <div class="drawer-backdrop" *ngIf="showRadioDrawer" (click)="toggleRadioDrawer()"></div>
+  </div>
+
