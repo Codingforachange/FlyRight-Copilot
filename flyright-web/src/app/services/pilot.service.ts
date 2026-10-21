@@ -27,4 +27,8 @@ export class PilotService {
   getPilotMissions(pilotId: number): Observable<FlightMission[]> {
     return this.http.get<FlightMission[]>(`${this.missionApi}/pilot/${pilotId}`);
   }
+
+  saveFlightLog(flightLog: any): Observable<any> {
+    return this.http.post<any>('/api/flight-logs', flightLog);
+  }
 }

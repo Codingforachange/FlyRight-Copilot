@@ -459,8 +459,27 @@ export class AppComponent implements OnInit {
   }
 
   closeDebrief(): void {
-    this.showDebriefModal = false;
-    this.resetAll();
+    const flightRecord = {
+      pilotName: 'Mike Pelino',
+      aircraftTail: 'N734SP',
+      flightProfile: 'Local Traffic Pattern',
+      departureIcao: 'KBTP',
+      compliancePercentage: 100
+    };
+
+    this.pilotService.saveFlightLog(flightRecord).subscribe({
+      next: (saved) => {
+        console.log('Flight log successfully persisted to flyright_db:', saved);
+        this.showDebriefModal = false;
+        this.resetAll();
+      },
+      error: (err) => {
+        console.error('Failed to persist flight log:', err);
+        // Fallback so the pilot is never locked out of resetting
+        this.showDebriefModal = false;
+        this.resetAll();
+      }
+    });
   }
 
   selectPhase(index: number): void {
