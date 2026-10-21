@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   currentMetar: MetarBriefing | null = null;
   isLoadingWeather = false;
   showRadioDrawer = false;
+  showDebriefModal: boolean = false;
   radioScripts = [
     {
       phase: 'ENGINE START & TAXI',
@@ -451,8 +452,15 @@ export class AppComponent implements OnInit {
       const nextTitle = this.checklists[this.activeChecklistIndex].title;
       this.speakCue(`Starting ${nextTitle}`);
     } else {
-      this.speakCue('All pre-flight checklists complete. Ready for engine run-up and departure.');
+      this.speakCue('All flight phases complete. Initiating mission debrief.');
+      this.showDebriefModal = true;
+      this.cdr.detectChanges();
     }
+  }
+
+  closeDebrief(): void {
+    this.showDebriefModal = false;
+    this.resetAll();
   }
 
   selectPhase(index: number): void {

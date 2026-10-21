@@ -114,7 +114,7 @@
           Challenge-and-response mode (hands-free)
         </span>
       </div>
-      <h2>{{ checklists[activeChecklistIndex]?.title }}</h2>
+      <h2>{{ checklists[activeChecklistIndex].title }}</h2>
       <span class="phase-tag">{{ checklists[activeChecklistIndex].phase }}</span>
       <!-- Cockpit Instrument Dial Gauge -->
       <div class="instrument-gauge">
@@ -350,4 +350,24 @@
   <!-- BACKDROP OVERLAY -->
   <div class="drawer-backdrop" *ngIf="showRadioDrawer" (click)="toggleRadioDrawer()"></div>
   </div>
+<!-- MISSION DEBRIEF & FLIGHT LOG MODAL -->
+<div class="modal-overlay" *ngIf="showDebriefModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="badge-tag">MISSION COMPLETED</div>
+      <h2>Flight Debrief & Logbook Entry</h2>
+      <p class="modal-sub">C172S Skyhawk | Tail: N734SP | KBTP</p>
+    </div>
 
+    <div style="padding: 1.5rem 0; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6;">
+      <p><strong>Pilot in Command:</strong> Mike Pelino</p>
+      <p><strong>Flight Profile:</strong> Local Traffic Pattern</p>
+      <p><strong>Checklist Compliance:</strong> 100% Verified Hands-Free</p>
+      <p><strong>Status:</strong> Aircraft secured, runway clear past hold line.</p>
+    </div>
+
+    <button type="button" class="btn-primary" (click)="closeDebrief()">
+      Log Flight & Reset Mission
+    </button>
+  </div>
+</div>
