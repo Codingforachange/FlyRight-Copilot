@@ -5,33 +5,88 @@ import com.flyright.api.model.Checklist;
 import com.flyright.api.model.ChecklistItem;
 import com.flyright.api.repository.AircraftModelRepository;
 import com.flyright.api.repository.ChecklistRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Component 
-@RequiredArgsConstructor 
+@Component
 public class DataSeeder implements CommandLineRunner {
+
     private final AircraftModelRepository aircraftModelRepo;
     private final ChecklistRepository checklistRepo;
 
-    @Override 
-    public void run(String... args) throws Exception {
-        if (aircraftModelRepo.count() > 0) {
-            return;
-        }
+    public DataSeeder(AircraftModelRepository aircraftModelRepo, ChecklistRepository checklistRepo) {
+        this.aircraftModelRepo = aircraftModelRepo;
+        this.checklistRepo = checklistRepo;
+    }
 
-        AircraftModel c172 = aircraftModelRepo.save(AircraftModel.builder()
+    @Override
+    public void run(String... args) throws Exception {
+        // C172S
+        AircraftModel c172 = aircraftModelRepo.findByModelCode("C172S").orElseGet(() -> 
+            aircraftModelRepo.save(AircraftModel.builder()
                 .modelCode("C172S")
                 .name("Cessna 172 Skyhawk")
                 .vrSpeedKnots(55)
                 .vxSpeedKnots(62)
                 .vySpeedKnots(74)
                 .vfeSpeedKnots(85)
+                .build())
+        );
+
+        // Cessna 152
+        if (aircraftModelRepo.findByModelCode("C152").isEmpty()) {
+            aircraftModelRepo.save(AircraftModel.builder()
+                .modelCode("C152")
+                .name("Cessna 152")
+                .vrSpeedKnots(50)
+                .vxSpeedKnots(55)
+                .vySpeedKnots(67)
+                .vfeSpeedKnots(85)
                 .build());
+        }
+
+        // Piper Cherokee 140
+        if (aircraftModelRepo.findByModelCode("PA28-140").isEmpty()) {
+            aircraftModelRepo.save(AircraftModel.builder()
+                .modelCode("PA28-140")
+                .name("Piper PA-28-140 Cherokee")
+                .vrSpeedKnots(55)
+                .vxSpeedKnots(64)
+                .vySpeedKnots(74)
+                .vfeSpeedKnots(100)
+                .build());
+        }
+
+        // Piper Cherokee 160
+        if (aircraftModelRepo.findByModelCode("PA28-160").isEmpty()) {
+            aircraftModelRepo.save(AircraftModel.builder()
+                .modelCode("PA28-160")
+                .name("Piper PA-28-160 Cherokee")
+                .vrSpeedKnots(55)
+                .vxSpeedKnots(64)
+                .vySpeedKnots(75)
+                .vfeSpeedKnots(100)
+                .build());
+        }
+
+        // Piper Cherokee 180 Archer
+        if (aircraftModelRepo.findByModelCode("PA28-180").isEmpty()) {
+            aircraftModelRepo.save(AircraftModel.builder()
+                .modelCode("PA28-180")
+                .name("Piper PA-28-180 Archer")
+                .vrSpeedKnots(55)
+                .vxSpeedKnots(64)
+                .vySpeedKnots(76)
+                .vfeSpeedKnots(102)
+                .build());
+        }
+
+        // Prevent duplicate checklist entries
+        if (checklistRepo.count() > 0) {
+            return;
+        }
 
         Checklist runUp = Checklist.builder()
                 .aircraftModel(c172)
@@ -437,28 +492,14 @@ public class DataSeeder implements CommandLineRunner {
                 .itemSequence(1)
                 .challenge("Taxi Call")
                 .response("CALL")
-                .audioCue("Pilot: [Airport] Ground, [Callsign], at [ramp/location], VFR to [direction], with [ATIS code], ready to taxi.")
+                .audioCue("Announce taxi intentions on ground or CTAF.")
                 .build(),
-        ChecklistItem.builder()
+            ChecklistItem.builder()
                 .checklist(taxi)
                 .itemSequence(2)
-                .challenge("ATC Call")
-                .response("CALL")
-                .audioCue("ATC: [Callsign], [runway], taxi via [taxiway], hold short [runway].")
-                .build(),
-        ChecklistItem.builder()
-                .checklist(taxi)
-                .itemSequence(3)
-                .challenge("Taxi Return Call")
-                .response("CALL")
-                .audioCue("Pilot (readback): [Runway], taxi via [taxiway], hold short [runway], [Callsign].")
-                .build(),
-        ChecklistItem.builder()
-                .checklist(taxi)
-                .itemSequence(4)
-                .challenge("Taxi")
-                .response("Taxi")
-                .audioCue("Taxi to runway hold short line for run up.")
+                .challenge("Brakes & Steering")
+                .response("CHECK")
+                .audioCue("Test toe brakes, rudder steering, and instruments during roll.")
                 .build()
 ));
     checklistRepo.save(taxi);
@@ -506,6 +547,13 @@ public class DataSeeder implements CommandLineRunner {
                         .challenge("Runway & Approach")
                         .response("CLEAR")
                         .audioCue("Clear left, clear right, clear final")
+                        .build(),
+                ChecklistItem.builder()
+                        .checklist(beforeTakeoff)
+                        .itemSequence(6)
+                        .challenge("Takeoff Call")
+                        .response("CALL")
+                        .audioCue("Announce departure on tower or CTAF frequency prior to taking active runway.")
                         .build()
         ));
         checklistRepo.save(beforeTakeoff);
@@ -583,20 +631,27 @@ public class DataSeeder implements CommandLineRunner {
                 ChecklistItem.builder()
                         .checklist(pattern)
                         .itemSequence(3)
+                        .challenge("Downwind Call")
+                        .response("CALL")
+                        .audioCue("Report midfield downwind, gear confirmed, touch-and-go or full stop intentions.")
+                        .build(),
+                ChecklistItem.builder()
+                        .checklist(pattern)
+                        .itemSequence(4)
                         .challenge("Abeam Numbers")
                         .response("CARB HEAT ON, 1500 RPM, FLAPS 10°")
                         .audioCue("Carb heat on, throttle 1500, extend flaps 10")
                         .build(),
                 ChecklistItem.builder()
                         .checklist(pattern)
-                        .itemSequence(4)
+                        .itemSequence(5)
                         .challenge("Base Turn")
                         .response("70 - 75 KIAS, FLAPS 20°")
                         .audioCue("Base turn, maintain 75 knots, flaps 20")
                         .build(),
                 ChecklistItem.builder()
                         .checklist(pattern)
-                        .itemSequence(5)
+                        .itemSequence(6)
                         .challenge("Final Turn")
                         .response("65 KIAS, FLAPS AS DESIRED")
                         .audioCue("Aligned on final, 65 knots, full flaps")
