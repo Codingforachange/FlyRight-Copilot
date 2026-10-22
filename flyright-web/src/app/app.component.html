@@ -267,7 +267,9 @@
             <select [(ngModel)]="missionForm.aircraftModelCode" name="aircraftModel">
               <option value="C172S">Cessna 172S Skyhawk</option>
               <option value="C152">Cessna 152</option>
-              <option value="PA28">Piper PA-28 Cherokee</option>
+              <option value="PA28-140">Piper PA-28-140 Cherokee</option>
+              <option value="PA28-160">Piper PA-28-160 Cherokee</option>
+              <option value="PA28-180">Piper PA-28-180 Archer</option>
             </select>
           </div>
 
@@ -399,49 +401,49 @@
 </div>
 <!-- ELECTRONIC LOGBOOK VIEWER MODAL -->
 <div class="modal-overlay" *ngIf="showLogbookModal">
-  <div class="modal-card" style="max-width: 650px; width: 90%;">
+  <div class="modal-card logbook-card">
     <div class="modal-header">
       <div class="badge-tag">PERSISTED FLIGHT LOGS</div>
       <h2>Pilot Electronic Logbook</h2>
       <p class="modal-sub">Certified Flight Records & Currency Tracking</p>
     </div>
 
-    <div style="max-height: 320px; overflow-y: auto; margin: 1.5rem 0;">
-      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; color: #cbd5e1;">
+    <div class="logbook-table-container">
+      <table class="logbook-table">
         <thead>
-          <tr style="border-bottom: 1px solid #334155; color: #38bdf8;">
-            <th style="padding: 8px;">Date/Time</th>
-            <th style="padding: 8px;">Aircraft</th>
-            <th style="padding: 8px;">Airport</th>
-            <th style="padding: 8px;">Profile</th>
-            <th style="padding: 8px;">Total Time</th>
-            <th style="padding: 8px;">T/O</th>
-            <th style="padding: 8px;">Ldg</th>
-            <th style="padding: 8px;">Compliance</th>
+          <tr>
+            <th>Date / Time</th>
+            <th>Aircraft</th>
+            <th>Airport</th>
+            <th>Flight Profile</th>
+            <th class="text-center">Total Time</th>
+            <th class="text-center">T/O</th>
+            <th class="text-center">Ldg</th>
+            <th class="text-center">Compliance</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let log of flightLogs" style="border-bottom: 1px solid #1e293b;">
-            <td style="padding: 8px;">{{ log.completedAt | date:'short' }}</td>
-            <td style="padding: 8px; font-weight: bold; color: #f8fafc;">{{ log.aircraftTail }}</td>
-            <td style="padding: 8px;">{{ log.departureIcao }}</td>
-            <td style="padding: 8px;">{{ log.flightProfile }}</td>
-            <td style="padding: 8px; color: #38bdf8;">{{ log.totalDurationHours ? (log.totalDurationHours + ' hrs') : '--' }}</td>
-            <td style="padding: 8px;">{{ log.takeoffsCount ?? '--' }}</td>
-            <td style="padding: 8px;">{{ log.landingsCount ?? '--' }}</td>
-            <td style="padding: 8px; color: #4ade80;">{{ log.compliancePercentage }}%</td>
+          <tr *ngFor="let log of flightLogs">
+            <td class="log-date">{{ log.completedAt | date:'short' }}</td>
+            <td class="log-tail">{{ log.aircraftTail }}</td>
+            <td><span class="icao-pill">{{ log.departureIcao }}</span></td>
+            <td>{{ log.flightProfile }}</td>
+            <td class="text-center highlight-blue">{{ log.totalDurationHours ? (log.totalDurationHours + ' hrs') : '--' }}</td>
+            <td class="text-center">{{ log.takeoffsCount ?? '--' }}</td>
+            <td class="text-center">{{ log.landingsCount ?? '--' }}</td>
+            <td class="text-center"><span class="compliance-tag">{{ log.compliancePercentage }}%</span></td>
           </tr>
           <tr *ngIf="flightLogs.length === 0">
-            <td colspan="8" style="text-align: center; padding: 1.5rem; color: #94a3b8;">
-              No logged flights found in database.
+            <td colspan="8" class="empty-log-state">
+              No flight records found in PostgreSQL database.
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <button type="button" class="btn-primary" (click)="closeLogbook()">
-      Close Logbook
-    </button>
+    <div class="modal-actions" style="margin-top: 1rem;">
+      <button type="button" class="btn-primary" (click)="closeLogbook()">Close Logbook</button>
+    </div>
   </div>
 </div>
