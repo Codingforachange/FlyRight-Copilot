@@ -392,6 +392,12 @@ export class AppComponent implements OnInit {
   confirmMission(): void {
     if (!this.currentPilot?.id) return;
     this.missionForm.pilot = this.currentPilot;
+
+    const selectedCode = this.missionForm.aircraftModelCode || 'C172S';
+    if (this.aircraftSpeeds[selectedCode]) {
+      this.currentVspeeds = { ...this.aircraftSpeeds[selectedCode] };
+    }
+
     this.pilotService.createMission(this.missionForm).subscribe({
       next: () => {
         this.showMissionModal = false;
@@ -698,6 +704,16 @@ export class AppComponent implements OnInit {
     departureTowered: false,
     destinationTowered: false
   };
+
+  aircraftSpeeds: Record<string, { vr: number; vx: number; vy: number; vfe: number; name: string }> = {
+    'C172S': { vr: 55, vx: 62, vy: 74, vfe: 85, name: 'Cessna 172S Skyhawk' },
+    'C152': { vr: 50, vx: 55, vy: 67, vfe: 85, name: 'Cessna 152' },
+    'PA28-140': { vr: 55, vx: 64, vy: 74, vfe: 100, name: 'Piper PA-28-140 Cherokee' },
+    'PA28-160': { vr: 55, vx: 64, vy: 75, vfe: 100, name: 'Piper PA-28-160 Cherokee' },
+    'PA28-180': { vr: 55, vx: 64, vy: 76, vfe: 102, name: 'Piper PA-28-180 Archer' }
+  };
+
+  currentVspeeds = { vr: 55, vx: 62, vy: 74, vfe: 85 };
 
   showAuthModal = false;
   showMissionModal = false;

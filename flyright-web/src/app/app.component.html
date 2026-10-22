@@ -51,6 +51,10 @@
       <span class="metar-element"><strong>Vis:</strong> {{ currentMetar.visibility }} SM</span>
       <span class="metar-element"><strong>Altimeter:</strong> {{ currentMetar.altimeter | number:'1.2-2' }} inHg</span>
       <span class="metar-element"><strong>Temp/Dew:</strong> {{ currentMetar.temperature }}°C / {{ currentMetar.dewpoint }}°C</span>
+      <span class="metar-element"><strong>Vr:</strong> {{ currentVspeeds.vr }} kt</span>
+      <span class="metar-element"><strong>Vx:</strong> {{ currentVspeeds.vx }} kt</span>
+      <span class="metar-element"><strong>Vy:</strong> {{ currentVspeeds.vy }} kt</span>
+      <span class="metar-element"><strong>Vfe:</strong> {{ currentVspeeds.vfe }} kt</span>
     </div>
     <div class="runway-analysis" *ngIf="currentMetar && currentMetar.runwayAnalysis">
       <span 
