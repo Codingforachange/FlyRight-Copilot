@@ -25,6 +25,12 @@ public class FlightLog {
 
     private LocalDateTime completedAt;
 
+    private Double totalDurationHours;
+
+    private Integer takeoffsCount;
+
+    private Integer landingsCount;
+
     public FlightLog() {
         this.completedAt = LocalDateTime.now();
     }
@@ -59,4 +65,13 @@ public class FlightLog {
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public Double getTotalDurationHours() { return totalDurationHours; }
+    public void setTotalDurationHours(Double totalDurationHours) { this.totalDurationHours = totalDurationHours;}
+
+    public Integer getTakeoffsCount() { return takeoffsCount; }
+    public void setTakeoffsCount(Integer takeoffsCount) { this.takeoffsCount = takeoffsCount;}
+
+    public Integer getLandingsCount() { return landingsCount; }
+    public void setLandingsCount(Integer landingsCount) { this.landingsCount = landingsCount;}
 }
