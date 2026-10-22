@@ -420,12 +420,17 @@ export class AppComponent implements OnInit {
     this.checklistService.getChecklistsByModel(modelCode).subscribe({
       next: (data) => {
         this.checklists = data;
+        this.errorMessage = '';
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error fetching checklists:', err);
-        this.errorMessage = 'Unable to connect to FlyRight backend API.';
-        this.isLoading = false;
+        console.warn(`Checklists for ${modelCode} not found, falling back to C172S standard:`, err);
+        if (modelCode !== 'C172S') {
+          this.loadChecklist('C172S');
+        } else {
+          this.errorMessage = 'Unable to connect to FlyRight backend API.';
+          this.isLoading = false;
+        }
       }
     });
   }
