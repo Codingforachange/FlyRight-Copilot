@@ -1055,3 +1055,46 @@ h1 {
 .listen-btn:hover {
   background: #334155;
 }
+
+/* AVIATOR PIC BADGE */
+.pilot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.65rem;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+  border: 1px solid #f59e0b; /* Aviator gold border */
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+  align-self: center;
+}
+
+.pilot-wings-icon {
+  width: 24px;
+  height: 24px;
+  color: #fbbf24; /* Flight gold */
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
+  flex-shrink: 0;
+}
+
+.pilot-badge-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.badge-role {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+}
+
+.badge-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+}

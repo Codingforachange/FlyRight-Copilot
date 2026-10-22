@@ -68,7 +68,7 @@ export class WeatherService {
           windDirection: wdir,
           windSpeed: wspd,
           visibility: item.visib ?? 10,
-          altimeter: item.altim ?? 30.02,
+          altimeter: item.altim ? Number((item.altim > 100 ? item.altim * 0.02953 : item.altim).toFixed(2)) : 30.02,
           temperature: item.temp ?? 16,
           dewpoint: item.dewp ?? 4,
           runwayAnalysis: [rwy08, rwy26]

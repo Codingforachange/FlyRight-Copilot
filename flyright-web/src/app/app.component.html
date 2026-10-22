@@ -14,8 +14,15 @@
       </span>
     </div>
 
-    <div class="pilot-callsign-display">
-      PIC: {{ currentPilot?.name || 'Pilot in Command' }}
+    <div class="pilot-badge">
+      <svg class="pilot-wings-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 4.5C10.5 4.5 9 6.5 2 7.5c1.8 1.4 4.5 2.1 7.2 2.3-.5 1-1.2 1.8-2.2 2.2 2.5.3 4.5-.8 5-2 0 0 0 0 0 0 .5 1.2 2.5 2.3 5 2-1-.4-1.7-1.2-2.2-2.2 2.7-.2 5.4-.9 7.2-2.3-7-1-8.5-3-10-3z"/>
+        <circle cx="12" cy="7.5" r="1.5"/>
+      </svg>
+      <div class="pilot-badge-text">
+        <span class="badge-role">PIC</span>
+        <span class="badge-name">{{ currentPilot?.name || 'Mike Pelino' }}</span>
+      </div>
     </div>
 
     <div class="header-actions">
@@ -24,6 +31,9 @@
       </button>
       <button type="button" class="ctrl-btn btn-comms" (click)="toggleRadioDrawer()">
         {{ showRadioDrawer ? 'Close Radios' : 'ATC Comms' }}
+      </button>
+      <button type="button" class="btn-atc" (click)="openLogbook()">
+        E-Logbook
       </button>
       <button type="button" class="ctrl-btn btn-danger" (click)="resetAll()">
         Reset All
@@ -365,9 +375,73 @@
       <p><strong>Checklist Compliance:</strong> 100% Verified Hands-Free</p>
       <p><strong>Status:</strong> Aircraft secured, runway clear past hold line.</p>
     </div>
-
+    <div style="display: flex; gap: 0.75rem; justify-content: space-between; margin: 1.25rem 0; background: rgba(15, 23, 42, 0.6); padding: 0.75rem; border-radius: 8px; border: 1px solid #334155;">
+      <div style="flex: 1; text-align: left;">
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Hobbs (Hrs)</label>
+        <input type="number" step="0.1" min="0.1" [(ngModel)]="debriefDurationHours"
+               style="width: 100%; box-sizing: border-box; padding: 6px; background: #0f172a; border: 1px solid #475569; color: #38bdf8; border-radius: 4px; font-weight: bold; text-align: center;" />
+      </div>
+      <div style="flex: 1; text-align: left;">
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Takeoffs</label>
+        <input type="number" min="1" [(ngModel)]="debriefTakeoffs"
+               style="width: 100%; box-sizing: border-box; padding: 6px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; border-radius: 4px; font-weight: bold; text-align: center;" />
+      </div>
+      <div style="flex: 1; text-align: left;">
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Landings</label>
+        <input type="number" min="1" [(ngModel)]="debriefLandings"
+               style="width: 100%; box-sizing: border-box; padding: 6px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; border-radius: 4px; font-weight: bold; text-align: center;" />
+      </div>
+    </div>
     <button type="button" class="btn-primary" (click)="closeDebrief()">
       Log Flight & Reset Mission
+    </button>
+  </div>
+</div>
+<!-- ELECTRONIC LOGBOOK VIEWER MODAL -->
+<div class="modal-overlay" *ngIf="showLogbookModal">
+  <div class="modal-card" style="max-width: 650px; width: 90%;">
+    <div class="modal-header">
+      <div class="badge-tag">PERSISTED FLIGHT LOGS</div>
+      <h2>Pilot Electronic Logbook</h2>
+      <p class="modal-sub">Certified Flight Records & Currency Tracking</p>
+    </div>
+
+    <div style="max-height: 320px; overflow-y: auto; margin: 1.5rem 0;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; color: #cbd5e1;">
+        <thead>
+          <tr style="border-bottom: 1px solid #334155; color: #38bdf8;">
+            <th style="padding: 8px;">Date/Time</th>
+            <th style="padding: 8px;">Aircraft</th>
+            <th style="padding: 8px;">Airport</th>
+            <th style="padding: 8px;">Profile</th>
+            <th style="padding: 8px;">Total Time</th>
+            <th style="padding: 8px;">T/O</th>
+            <th style="padding: 8px;">Ldg</th>
+            <th style="padding: 8px;">Compliance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of flightLogs" style="border-bottom: 1px solid #1e293b;">
+            <td style="padding: 8px;">{{ log.completedAt | date:'short' }}</td>
+            <td style="padding: 8px; font-weight: bold; color: #f8fafc;">{{ log.aircraftTail }}</td>
+            <td style="padding: 8px;">{{ log.departureIcao }}</td>
+            <td style="padding: 8px;">{{ log.flightProfile }}</td>
+            <td style="padding: 8px; color: #38bdf8;">{{ log.totalDurationHours ? (log.totalDurationHours + ' hrs') : '--' }}</td>
+            <td style="padding: 8px;">{{ log.takeoffsCount ?? '--' }}</td>
+            <td style="padding: 8px;">{{ log.landingsCount ?? '--' }}</td>
+            <td style="padding: 8px; color: #4ade80;">{{ log.compliancePercentage }}%</td>
+          </tr>
+          <tr *ngIf="flightLogs.length === 0">
+            <td colspan="8" style="text-align: center; padding: 1.5rem; color: #94a3b8;">
+              No logged flights found in database.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button type="button" class="btn-primary" (click)="closeLogbook()">
+      Close Logbook
     </button>
   </div>
 </div>

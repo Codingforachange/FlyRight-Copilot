@@ -30,6 +30,13 @@ export class AppComponent implements OnInit {
   isLoadingWeather = false;
   showRadioDrawer = false;
   showDebriefModal: boolean = false;
+  showLogbookModal: boolean = false;
+  flightLogs: any[] = [];
+  engineStartTime: Date | null = null;
+  engineStopTime: Date | null = null;
+  debriefDurationHours: number = 0.8;
+  debriefTakeoffs: number = 1;
+  debriefLandings: number = 1;
   radioScripts = [
     {
       phase: 'ENGINE START & TAXI',
@@ -451,8 +458,15 @@ export class AppComponent implements OnInit {
 
       const nextTitle = this.checklists[this.activeChecklistIndex].title;
       this.speakCue(`Starting ${nextTitle}`);
-    } else {
+    } 
+    else {
       this.speakCue('All flight phases complete. Initiating mission debrief.');
+      this.engineStopTime = new Date();
+      if (this.engineStartTime) {
+        const diffMs = this.engineStopTime.getTime() - this.engineStartTime.getTime();
+        const rawHours = diffMs / (1000 * 60 * 60);
+        this.debriefDurationHours = Math.max(0.1, Math.round(rawHours * 10) / 10);
+      }
       this.showDebriefModal = true;
       this.cdr.detectChanges();
     }
@@ -464,8 +478,12 @@ export class AppComponent implements OnInit {
       aircraftTail: 'N734SP',
       flightProfile: 'Local Traffic Pattern',
       departureIcao: 'KBTP',
-      compliancePercentage: 100
+      compliancePercentage: 100,
+      totalDurationHours: this.debriefDurationHours,
+      takeoffsCount: this.debriefTakeoffs,
+      landingsCount: this.debriefLandings
     };
+    
 
     this.pilotService.saveFlightLog(flightRecord).subscribe({
       next: (saved) => {
@@ -482,7 +500,27 @@ export class AppComponent implements OnInit {
     });
   }
 
+  openLogbook(): void {
+    this.pilotService.getFlightLogs().subscribe({
+      next: (logs) => {
+        this.flightLogs = logs;
+        this.showLogbookModal = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load flight logs from database:', err);
+      }
+    });
+  }
+
+  closeLogbook(): void {
+    this.showLogbookModal = false;
+  }
+
   selectPhase(index: number): void {
+    if (index >= 2 && !this.engineStartTime) {
+      this.engineStartTime = new Date();
+    }
     this.activeChecklistIndex = index;
   }
 

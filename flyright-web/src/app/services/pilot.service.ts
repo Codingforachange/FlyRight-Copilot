@@ -31,4 +31,8 @@ export class PilotService {
   saveFlightLog(flightLog: any): Observable<any> {
     return this.http.post<any>('/api/flight-logs', flightLog);
   }
+
+  getFlightLogs(): Observable<any[]> {
+    return this.http.get<any[]>('/api/flight-logs');
+  }
 }
