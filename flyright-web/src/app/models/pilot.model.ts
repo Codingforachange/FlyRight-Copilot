@@ -17,4 +17,5 @@ export interface FlightMission {
   departureTowered: boolean;
   destinationTowered?: boolean;
   createdAt?: string;
+  alternateIcao?: string;
 }

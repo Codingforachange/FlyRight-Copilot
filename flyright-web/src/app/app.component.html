@@ -26,6 +26,15 @@
     </div>
 
     <div class="header-actions">
+      <!-- HUD COCKPIT VIEW TOGGLE -->
+      <div class="view-toggle-group">
+        <button type="button" class="view-pill-btn" [class.active]="activeCockpitView === 'CHECKLIST'" (click)="switchCockpitView('CHECKLIST')">
+          Checklist
+        </button>
+        <button type="button" class="view-pill-btn" [class.active]="activeCockpitView === 'NAV_MAP'" (click)="switchCockpitView('NAV_MAP')">
+          Live Nav Map
+        </button>
+      </div>
       <button type="button" class="ctrl-btn" (click)="toggleAudio()">
         {{ isAudioMuted ? 'Audio Off' : 'Audio On' }}
       </button>
@@ -78,7 +87,7 @@
   </div>
 
   <!-- Horizontal Phase Tabs -->
-  <div class="phase-selector" *ngIf="!isLoading && checklists.length > 0">
+  <div class="phase-selector" *ngIf="activeCockpitView === 'CHECKLIST' && !isLoading && checklists.length > 0">
     <button 
       *ngFor="let cl of checklists; let i = index"
       class="phase-tab"
@@ -113,8 +122,8 @@
   </div>
 
   <!-- Single Active Checklist Card -->
-  <div *ngIf="!isLoading && checklists.length > 0" class="checklist-card">
-    <div class="card-header">
+  <div *ngIf="activeCockpitView === 'CHECKLIST' && !isLoading && checklists.length > 0" class="checklist-card">
+    <div class="card-header" *ngIf="activeCockpitView === 'CHECKLIST'">
       <div class="voice-controls">
         <button
           type="button"
@@ -177,7 +186,7 @@
     </div>
   </div>
 
-    <ul class="item-list">
+    <ul class="item-list" *ngIf="activeCockpitView === 'CHECKLIST'">
       <li 
         *ngFor="let item of checklists[activeChecklistIndex]?.items" 
         class="item-row"
@@ -197,6 +206,18 @@
         Complete & Advance: {{ (checklists[activeChecklistIndex + 1] ? checklists[activeChecklistIndex + 1].title : 'Pre-Flight Completed') }} 
       </button>
     </div>
+  </div>
+    <!-- LIVE IN-FLIGHT NAV MAP VIEW -->
+  <div *ngIf="activeCockpitView === 'NAV_MAP'" class="nav-map-container">
+    <div class="nav-map-header">
+      <div class="nav-header-info">
+        <span class="nav-title">VFR Navigation & Tactical Diversion Map</span>
+        <span class="nav-badge" *ngIf="missionForm.destinationIcao">Route: {{ missionForm.departureIcao }} &rarr; {{ missionForm.destinationIcao }}</span>
+        <span class="nav-alt-badge" *ngIf="missionForm.alternateIcao">Alternate: {{ missionForm.alternateIcao }}</span>
+      </div>
+    </div>
+    <div id="cockpitNavMap" class="cockpit-nav-canvas"></div>
+  </div>
     
   <!-- 1. PILOT SUBSCRIPTION & AUTH GATE -->
   <div class="modal-overlay" *ngIf="showAuthModal">
@@ -299,13 +320,13 @@
 
         <div class="form-row">
           <div class="form-group flex-1">
-            <label>Departure Airport (ICAO)</label>
-            <input type="text" [(ngModel)]="missionForm.departureIcao" name="depIcao" placeholder="e.g. KBTP" required />
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="depTowered" />
-              Towered Airspace (Class D/C/B)
-            </label>
-          </div>
+          <label>Departure Airport (ICAO)</label>
+          <input type="text" [(ngModel)]="missionForm.departureIcao" (ngModelChange)="updateAirportVisuals(missionForm.departureIcao)" name="deptIcao" placeholder="e.g. KBTP" required />
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="depTowered" />
+            Towered Airspace (Class D/C/B)
+          </label>
+        </div>
 
           <div class="form-group flex-1" *ngIf="missionForm.flightType === 'CROSS_COUNTRY'">
             <label>Destination Airport (ICAO)</label>
@@ -315,6 +336,24 @@
               Towered Airspace
             </label>
           </div>
+        </div>
+
+        <!-- EMERGENCY DIVERSION / ALTERNATE AIRPORT -->
+        <div class="form-group flex-1" *ngIf="missionForm.flightType === 'CROSS_COUNTRY'">
+          <label>Alternate Airport / Diversion (ICAO)</label>
+          <input type="text" [(ngModel)]="missionForm.alternateIcao" name="altIcao" placeholder="e.g. KBVI or KLBE" />
+        </div>
+
+
+        <!-- RUNWAY VISUALIZER & DIVERSION PREVIEW -->
+        <div class="briefing-map-section">
+          <div class="map-header-strip">
+            <span class="map-label">Runway & Pattern Visualizer</span>
+            <span class="runway-dim-badge" *ngIf="selectedRunwayLength">
+              RWY Length: {{ selectedRunwayLength }} ft
+            </span>
+          </div>
+          <div id="briefingMap" class="briefing-map-canvas"></div>
         </div>
 
         <div class="modal-actions">
@@ -365,7 +404,7 @@
 
   <!-- BACKDROP OVERLAY -->
   <div class="drawer-backdrop" *ngIf="showRadioDrawer" (click)="toggleRadioDrawer()"></div>
-  </div>
+  
 <!-- MISSION DEBRIEF & FLIGHT LOG MODAL -->
 <div class="modal-overlay" *ngIf="showDebriefModal">
   <div class="modal-card">

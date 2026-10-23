@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { WeatherService, MetarBriefing } from './services/weather.service';
 import { from } from 'rxjs';
 
+import * as L from 'leaflet';
+
 
 @Component({
   selector: 'app-root',
@@ -28,6 +30,7 @@ export class AppComponent implements OnInit {
   synth: SpeechSynthesis | null = null;
   currentMetar: MetarBriefing | null = null;
   isLoadingWeather = false;
+  activeCockpitView: 'CHECKLIST' | 'NAV_MAP' = 'CHECKLIST';
   showRadioDrawer = false;
   showDebriefModal: boolean = false;
   showLogbookModal: boolean = false;
@@ -37,6 +40,106 @@ export class AppComponent implements OnInit {
   debriefDurationHours: number = 0.8;
   debriefTakeoffs: number = 1;
   debriefLandings: number = 1;
+  selectedRunwayLength: number = 4001;
+  private briefingMap: L.Map | null = null;
+  private cockpitNavMap: L.Map | null = null;
+
+  initBriefingMap(): void {
+    if (this.briefingMap) {
+      this.briefingMap.remove();
+      this.briefingMap = null;
+    }
+
+    const lat = 40.7767;
+    const lng = -79.9494;
+
+    this.briefingMap = L.map('briefingMap', {
+      center: [lat, lng],
+      zoom: 14,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(this.briefingMap);
+
+    const rwyLine = L.polyline([
+      [40.7785, -79.9575],
+      [40.7750, -79.9410]
+    ], {
+      color: '#38bdf8',
+      weight: 6,
+      opacity: 0.95
+    }).addTo(this.briefingMap);
+
+    rwyLine.bindTooltip('RWY 08/26 (4,001 ft)', { permanent: true, direction: 'top' });
+
+    const trafficPattern = L.polygon([
+      [40.7785, -79.9575],
+      [40.7850, -79.9575],
+      [40.7850, -79.9410],
+      [40.7750, -79.9410]
+    ], {
+      color: '#f59e0b',
+      dashArray: '6, 6',
+      weight: 2,
+      fillColor: '#f59e0b',
+      fillOpacity: 0.12
+    }).addTo(this.briefingMap);
+
+    trafficPattern.bindTooltip('Standard Left Traffic (1,000 ft AGL)', { direction: 'center' });
+
+    setTimeout(() => {
+      this.briefingMap?.invalidateSize();
+    }, 200);
+  }
+  initCockpitNavMap(): void {
+    if (this.cockpitNavMap) {
+      this.cockpitNavMap.remove();
+      this.cockpitNavMap = null;
+    }
+
+    setTimeout(() => {
+      const el = document.getElementById('cockpitNavMap');
+      if (!el) return;
+
+      this.cockpitNavMap = L.map('cockpitNavMap', {
+        attributionControl: false,
+        zoomControl: true
+      }).setView([40.7767, -79.9494], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+      }).addTo(this.cockpitNavMap);
+
+      setTimeout(() => {
+        this.cockpitNavMap?.invalidateSize();
+      }, 250);
+    }, 100);
+  }
+  switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP'): void {
+    this.activeCockpitView = view;
+    if (view === 'NAV_MAP') {
+      this.initCockpitNavMap();
+    }
+  }
+  updateAirportVisuals(icao: string): void {
+    const code = (icao || '').toUpperCase().trim();
+    if (code === 'KBTP') {
+      this.selectedRunwayLength = 4001;
+      if (this.briefingMap) {
+        this.briefingMap.setView([40.7767, -79.9494], 14);
+      }
+    } else if (code === 'KAGC') {
+      this.selectedRunwayLength = 6501;
+      if (this.briefingMap) {
+        this.briefingMap.setView([40.3544, -79.9298], 14);
+      }
+    } else {
+      this.selectedRunwayLength = 3500;
+    }
+  }
   radioScripts = [
     {
       phase: 'ENGINE START & TAXI',
@@ -74,6 +177,9 @@ export class AppComponent implements OnInit {
       try{
         this.currentPilot = JSON.parse(savedPilot);
         this.showMissionModal = true;
+        setTimeout(() => {
+          this.initBriefingMap();
+        }, 300);
       } catch (e) {
         localStorage.removeItem('flyright_pilot');
         this.showAuthModal = true;
@@ -707,7 +813,8 @@ export class AppComponent implements OnInit {
     departureIcao: 'KBTP',
     destinationIcao: '',
     departureTowered: false,
-    destinationTowered: false
+    destinationTowered: false,
+    alternateIcao: ''
   };
 
   aircraftSpeeds: Record<string, { vr: number; vx: number; vy: number; vfe: number; name: string }> = {
