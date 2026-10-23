@@ -43,6 +43,15 @@ export class AppComponent implements OnInit {
   selectedRunwayLength: number = 4001;
   private briefingMap: L.Map | null = null;
   private cockpitNavMap: L.Map | null = null;
+  private aircraftMarker: L.Marker | null = null;
+  isSimTracking: boolean = false;
+  simProgressIndex: number = 0;
+  private simIntervalId: any = null;
+  simTelemetry = {
+    groundSpeedKts: 105,
+    altitudeFt: 3000,
+    headingDeg: 168
+  };
 
   initBriefingMap(): void {
     if (this.briefingMap) {
@@ -104,19 +113,147 @@ export class AppComponent implements OnInit {
       const el = document.getElementById('cockpitNavMap');
       if (!el) return;
 
+      // Centered between Butler (KBTP) and Allegheny County (KAGC)
       this.cockpitNavMap = L.map('cockpitNavMap', {
         attributionControl: false,
         zoomControl: true
-      }).setView([40.7767, -79.9494], 13);
+      }).setView([40.5600, -79.9400], 10);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18
       }).addTo(this.cockpitNavMap);
 
+      // Core Aerodrome Coordinates
+      const kbtpCoords: [number, number] = [40.7767, -79.9494]; // Butler Co Regional
+      const kagcCoords: [number, number] = [40.3544, -79.9302]; // Allegheny Co
+      const kbviCoords: [number, number] = [40.7725, -80.3914]; // Beaver Co Alternate
+
+      // Visual Reference Points (VRPs) along corridor
+      const vrp1Coords: [number, number] = [40.6400, -79.8800]; // Route 28 Corridor
+      const vrp2Coords: [number, number] = [40.4850, -79.8700]; // Allegheny River Crossing
+
+      // Active Cross-Country Route Corridor (Cyan dashed)
+      const xcRoute = [kbtpCoords, vrp1Coords, vrp2Coords, kagcCoords];
+      L.polyline(xcRoute, {
+        color: '#0284c7',
+        weight: 4,
+        dashArray: '8, 8',
+        opacity: 0.9
+      }).addTo(this.cockpitNavMap);
+
+      // Departure: KBTP
+      L.circleMarker(kbtpCoords, { radius: 8, color: '#38bdf8', fillColor: '#0284c7', fillOpacity: 0.95 })
+        .addTo(this.cockpitNavMap)
+        .bindTooltip('DEP: KBTP (Butler Co)', { permanent: true, direction: 'top' });
+
+      // Visual Reference Points (VRPs) with Leg Telemetry
+      L.circleMarker(vrp1Coords, { radius: 7, color: '#e879f9', fillColor: '#c084fc', fillOpacity: 0.95 })
+        .addTo(this.cockpitNavMap)
+        .bindPopup(`
+          <div style="color: #0f172a; font-family: sans-serif; font-size: 12px; line-height: 1.4;">
+            <strong style="color: #7e22ce; font-size: 13px;">VRP 1: PA Route 28 Corridor</strong><br/>
+            <b>Track:</b> 168° Magnetic &bull; 9.2 NM from KBTP<br/>
+            <b>Target Alt:</b> 3,000 ft MSL<br/>
+            <b>Visual Cue:</b> Expressway cloverleaf intersection
+          </div>
+        `);
+
+      L.circleMarker(vrp2Coords, { radius: 7, color: '#e879f9', fillColor: '#c084fc', fillOpacity: 0.95 })
+        .addTo(this.cockpitNavMap)
+        .bindPopup(`
+          <div style="color: #0f172a; font-family: sans-serif; font-size: 12px; line-height: 1.4;">
+            <strong style="color: #7e22ce; font-size: 13px;">VRP 2: Allegheny River Crossing</strong><br/>
+            <b>Track:</b> 175° Magnetic &bull; 10.1 NM from VRP 1<br/>
+            <b>Target Alt:</b> 3,000 ft MSL<br/>
+            <b>Visual Cue:</b> Highland Park Dam & lock structure
+          </div>
+        `);
+
+      // Destination: KAGC
+      L.circleMarker(kagcCoords, { radius: 8, color: '#4ade80', fillColor: '#16a34a', fillOpacity: 0.95 })
+        .addTo(this.cockpitNavMap)
+        .bindTooltip('DEST: KAGC (Allegheny Co)', { permanent: true, direction: 'bottom' });
+
+      // Tactical Emergency Diversion Leg: KBVI (Amber dashed)
+      if (this.missionForm.alternateIcao || this.missionForm.flightType === 'CROSS_COUNTRY') {
+        L.polyline([kbtpCoords, kbviCoords], {
+          color: '#f59e0b',
+          weight: 3,
+          dashArray: '6, 10',
+          opacity: 0.8
+        }).addTo(this.cockpitNavMap);
+
+        L.circleMarker(kbviCoords, { radius: 7, color: '#f59e0b', fillColor: '#d97706', fillOpacity: 0.9 })
+          .addTo(this.cockpitNavMap)
+          .bindTooltip(`ALT DIVERSION: ${this.missionForm.alternateIcao || 'KBVI'}`, { permanent: true, direction: 'left' });
+      }
+
       setTimeout(() => {
         this.cockpitNavMap?.invalidateSize();
+        this.initAircraftMarker();
       }, 250);
     }, 100);
+  }
+  initAircraftMarker(): void {
+    if (!this.cockpitNavMap) return;
+
+    const startPos: [number, number] = [40.7767, -79.9494]; // KBTP
+    const planeIcon = L.divIcon({
+      className: 'aircraft-nav-icon',
+      html: `
+        <div style="transform: rotate(${this.simTelemetry.headingDeg}deg); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="#38bdf8">
+            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    if (this.aircraftMarker) {
+      this.aircraftMarker.remove();
+    }
+    this.aircraftMarker = L.marker(startPos, { icon: planeIcon }).addTo(this.cockpitNavMap);
+  }
+
+  toggleSimFlight(): void {
+    this.isSimTracking = !this.isSimTracking;
+    if (this.isSimTracking) {
+      const flightPoints: [number, number, number, number][] = [
+        [40.7767, -79.9494, 168, 1200], // KBTP Climb
+        [40.7083, -79.9147, 168, 2500],
+        [40.6400, -79.8800, 175, 3000], // VRP 1
+        [40.5625, -79.8750, 175, 3000],
+        [40.4850, -79.8700, 198, 2800], // VRP 2
+        [40.4197, -79.9001, 198, 2400],
+        [40.3544, -79.9302, 198, 1250] // KAGC Approach
+      ];
+
+      this.simIntervalId = setInterval(() => {
+        if (this.simProgressIndex < flightPoints.length - 1) {
+          this.simProgressIndex++;
+        } else {
+          this.simProgressIndex = 0;
+        }
+
+        const current = flightPoints[this.simProgressIndex];
+        const newCoords: [number, number] = [current[0], current[1]];
+        this.simTelemetry.headingDeg = current[2];
+        this.simTelemetry.altitudeFt = current[3];
+
+        if (this.aircraftMarker && this.cockpitNavMap) {
+          this.aircraftMarker.setLatLng(newCoords);
+          const iconEl = this.aircraftMarker.getElement();
+          if (iconEl) {
+            const inner = iconEl.querySelector('div');
+            if (inner) inner.style.transform = `rotate(${this.simTelemetry.headingDeg}deg)`;
+          }
+        }
+      }, 3000);
+    } else {
+      clearInterval(this.simIntervalId);
+    }
   }
   switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP'): void {
     this.activeCockpitView = view;

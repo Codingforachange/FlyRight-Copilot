@@ -210,12 +210,28 @@
     <!-- LIVE IN-FLIGHT NAV MAP VIEW -->
   <div *ngIf="activeCockpitView === 'NAV_MAP'" class="nav-map-container">
     <div class="nav-map-header">
-      <div class="nav-header-info">
-        <span class="nav-title">VFR Navigation & Tactical Diversion Map</span>
-        <span class="nav-badge" *ngIf="missionForm.destinationIcao">Route: {{ missionForm.departureIcao }} &rarr; {{ missionForm.destinationIcao }}</span>
-        <span class="nav-alt-badge" *ngIf="missionForm.alternateIcao">Alternate: {{ missionForm.alternateIcao }}</span>
+        <div class="nav-header-info">
+          <span class="nav-title">VFR Navigation & Tactical Diversion Map</span>
+          <span class="nav-badge" *ngIf="missionForm.destinationIcao">Route: {{ missionForm.departureIcao }} &rarr; {{ missionForm.destinationIcao }}</span>
+          <span class="nav-alt-badge" *ngIf="missionForm.alternateIcao">Alternate: {{ missionForm.alternateIcao }}</span>
+        </div>
+
+        <!-- LIVE TELEMETRY & SIMULATOR CONTROLS -->
+        <div class="nav-telemetry-controls" style="display: flex; align-items: center; gap: 10px;">
+          <div class="telemetry-pill" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 4px 10px; font-family: monospace; font-size: 11px; display: flex; gap: 8px;">
+            <span style="color: #94a3b8;">GS: <strong style="color: #38bdf8;">{{ simTelemetry.groundSpeedKts }} KT</strong></span>
+            <span style="color: #94a3b8;">ALT: <strong style="color: #4ade80;">{{ simTelemetry.altitudeFt }} FT</strong></span>
+            <span style="color: #94a3b8;">TRK: <strong style="color: #f59e0b;">{{ simTelemetry.headingDeg }}&deg;</strong></span>
+          </div>
+
+          <button type="button" 
+                  (click)="toggleSimFlight()" 
+                  [style.background]="isSimTracking ? '#ef4444' : '#0284c7'"
+                  style="color: #ffffff; border: none; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s ease;">
+            {{ isSimTracking ? 'Pause Sim' : 'Simulate GPS Track' }}
+          </button>
+        </div>
       </div>
-    </div>
     <div id="cockpitNavMap" class="cockpit-nav-canvas"></div>
   </div>
     
