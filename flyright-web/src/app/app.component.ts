@@ -50,8 +50,14 @@ export class AppComponent implements OnInit {
   simTelemetry = {
     groundSpeedKts: 105,
     altitudeFt: 3000,
-    headingDeg: 168
+    headingDeg: 168,
+    distRemainingNm: 27.2,
+    eteMin: 15
   };
+
+  isDiverting: boolean = false;
+  activeAirspaceAlert: string | null = null;
+  private activeDiversionVector: L.Polyline | null = null;
 
   initBriefingMap(): void {
     if (this.briefingMap) {
@@ -220,27 +226,65 @@ export class AppComponent implements OnInit {
   toggleSimFlight(): void {
     this.isSimTracking = !this.isSimTracking;
     if (this.isSimTracking) {
-      const flightPoints: [number, number, number, number][] = [
-        [40.7767, -79.9494, 168, 1200], // KBTP Climb
-        [40.7083, -79.9147, 168, 2500],
-        [40.6400, -79.8800, 175, 3000], // VRP 1
-        [40.5625, -79.8750, 175, 3000],
-        [40.4850, -79.8700, 198, 2800], // VRP 2
-        [40.4197, -79.9001, 198, 2400],
-        [40.3544, -79.9302, 198, 1250] // KAGC Approach
+      const defaultFlightPoints: [number, number, number, number, number, number][] = [
+        // lat, lng, trk, alt, distRemaining, eteMin
+        [40.7767, -79.9494, 168, 1200, 27.2, 16], // KBTP Climb
+        [40.7083, -79.9147, 168, 2500, 22.8, 13],
+        [40.6400, -79.8800, 175, 3000, 18.0, 10], // VRP 1
+        [40.5625, -79.8750, 175, 3000, 13.5, 8],
+        [40.4850, -79.8700, 198, 2800, 8.2, 5], // VRP 2
+        [40.4197, -79.9001, 198, 2400, 4.1, 2],
+        [40.3544, -79.9302, 198, 1250, 0.0, 0] // KAGC Approach
       ];
 
       this.simIntervalId = setInterval(() => {
-        if (this.simProgressIndex < flightPoints.length - 1) {
-          this.simProgressIndex++;
+        let current: [number, number, number, number, number, number];
+
+        if (!this.isDiverting) {
+          if (this.simProgressIndex < defaultFlightPoints.length - 1) {
+            this.simProgressIndex++;
+          } else {
+            this.simProgressIndex = 0;
+          }
+          current = defaultFlightPoints[this.simProgressIndex];
         } else {
-          this.simProgressIndex = 0;
+          // Tactical Divert in progress: step coordinates toward KBVI (40.7725, -80.3914)
+          const targetLat = 40.7725;
+          const targetLng = -80.3914;
+          const currentPos = this.aircraftMarker ? this.aircraftMarker.getLatLng() : { lat: 40.6400, lng: -79.8800 };
+
+          const nextLat = currentPos.lat + (targetLat - currentPos.lat) * 0.25;
+          const nextLng = currentPos.lng + (targetLng - currentPos.lng) * 0.25;
+
+          // Estimate distance remaining to KBVI in NM (approx 60nm per degree)
+          const dLat = (targetLat - nextLat) * 60;
+          const dLng = (targetLng - nextLng) * 45;
+          const distNm = Math.max(0, Math.round(Math.sqrt(dLat * dLat + dLng * dLng) * 10) / 10);
+          const eteMin = Math.round((distNm / (this.simTelemetry.groundSpeedKts || 105)) * 60);
+
+          current = [nextLat, nextLng, 275, 2600, distNm, eteMin];
         }
 
-        const current = flightPoints[this.simProgressIndex];
         const newCoords: [number, number] = [current[0], current[1]];
         this.simTelemetry.headingDeg = current[2];
         this.simTelemetry.altitudeFt = current[3];
+        this.simTelemetry.distRemainingNm = current[4];
+        this.simTelemetry.eteMin = current[5];
+
+        // Airspace Proximity Detection
+        if (this.isDiverting) {
+          if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
+            this.activeAirspaceAlert = 'ADVISORY: Approaching KBVI CTAF 123.00 &bull; Monitor Pattern & Winds';
+          } else {
+            this.activeAirspaceAlert = null;
+          }
+        } else {
+          if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
+            this.activeAirspaceAlert = 'ALERT: Entering KAGC Class D Airspace &bull; Contact Tower on 121.10';
+          } else {
+            this.activeAirspaceAlert = null;
+          }
+        }
 
         if (this.aircraftMarker && this.cockpitNavMap) {
           this.aircraftMarker.setLatLng(newCoords);
@@ -249,12 +293,57 @@ export class AppComponent implements OnInit {
             const inner = iconEl.querySelector('div');
             if (inner) inner.style.transform = `rotate(${this.simTelemetry.headingDeg}deg)`;
           }
+
+          if (this.isDiverting && this.activeDiversionVector) {
+            const kbviCoords: [number, number] = [40.7725, -80.3914];
+            this.activeDiversionVector.setLatLngs([newCoords, kbviCoords]);
+          }
         }
       }, 3000);
     } else {
       clearInterval(this.simIntervalId);
     }
   }
+
+  executeDiversion(): void {
+    if (!this.cockpitNavMap || !this.aircraftMarker) return;
+    this.isDiverting = !this.isDiverting;
+
+    const kbviCoords: [number, number] = [40.7725, -80.3914]; // Beaver Co
+    const currentPos = this.aircraftMarker.getLatLng();
+
+    if (this.isDiverting) {
+      if (this.activeDiversionVector) {
+        this.activeDiversionVector.remove();
+      }
+      this.activeDiversionVector = L.polyline([[currentPos.lat, currentPos.lng], kbviCoords], {
+        color: '#f97316',
+        weight: 4,
+        dashArray: '4, 8',
+        opacity: 0.95
+      }).addTo(this.cockpitNavMap);
+
+      this.activeDiversionVector.bindTooltip('DIRECT DIVERSION TO KBVI', {
+        permanent: true,
+        direction: 'center',
+        className: 'divert-nav-tooltip'
+      }).openTooltip();
+
+      // Immediately reorient aircraft heading toward KBVI (west-northwest ~275°)
+      this.simTelemetry.headingDeg = 275;
+      const iconEl = this.aircraftMarker.getElement();
+      if (iconEl) {
+        const inner = iconEl.querySelector('div');
+        if (inner) inner.style.transform = `rotate(275deg)`;
+      }
+    } else {
+      if (this.activeDiversionVector) {
+        this.activeDiversionVector.remove();
+        this.activeDiversionVector = null;
+      }
+    }
+  }
+
   switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP'): void {
     this.activeCockpitView = view;
     if (view === 'NAV_MAP') {
