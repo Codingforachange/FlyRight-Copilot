@@ -535,9 +535,14 @@
                style="width: 100%; box-sizing: border-box; padding: 6px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; border-radius: 4px; font-weight: bold; text-align: center;" />
       </div>
     </div>
-    <button type="button" class="btn-primary" (click)="closeDebrief()">
-      Log Flight & Reset Mission
-    </button>
+    <div style="display: flex; gap: 10px; margin-top: 1rem;">
+        <button type="button" class="btn-secondary" (click)="closeDebriefModal()" style="flex: 1; background: #334155; color: #ffffff; border: 1px solid #475569; border-radius: 6px; padding: 10px; font-weight: 700; cursor: pointer;">
+          Dismiss
+        </button>
+        <button type="button" class="btn-primary" (click)="saveDebriefToLogbook()" style="flex: 2; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 10px; font-weight: 700; cursor: pointer;">
+          Log Flight & Save
+        </button>
+    </div>
   </div>
 </div>
 <!-- ELECTRONIC LOGBOOK VIEWER MODAL -->

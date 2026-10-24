@@ -285,6 +285,19 @@ export class AppComponent implements OnInit {
         this.simTelemetry.distRemainingNm = current[4];
         this.simTelemetry.eteMin = current[5];
 
+        // Touchdown & Mission Completion Trigger
+        if (this.simTelemetry.distRemainingNm <= 0.1) {
+          clearInterval(this.simIntervalId);
+          this.isSimTracking = false;
+          this.activeAirspaceAlert = null;
+          this.showApproachCommsDrawer = false;
+
+          const arrivalIcao = this.isDiverting ? (this.missionForm.alternateIcao || 'KBVI') : (this.missionForm.destinationIcao || 'KAGC');
+          this.speakAlert(`Touchdown confirmed at ${arrivalIcao}. Welcome to the ramp. Mission complete.`);
+          
+          this.completeMissionFlight(arrivalIcao);
+        }
+
         // Airspace Proximity Detection
         if (this.isDiverting) {
           if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
@@ -401,6 +414,40 @@ export class AppComponent implements OnInit {
     recognition.start();
   }
 
+  completeMissionFlight(arrivalAirport: string): void {
+    this.engineStopTime = new Date();
+    this.debriefDurationHours = this.debriefDurationHours || 0.8;
+    this.debriefLandings = 1;
+    this.debriefTakeoffs = 1;
+    this.showDebriefModal = true;
+  }
+
+  saveDebriefToLogbook(): void {
+    const arrivalIcao = this.isDiverting 
+      ? (this.missionForm.alternateIcao || 'KBVI') 
+      : (this.missionForm.destinationIcao || 'KAGC');
+
+    const logEntry = {
+      completedAt: new Date().toISOString(),
+      aircraftTail: this.missionForm.tailNumber || 'N734SP',
+      departureIcao: `${this.missionForm.departureIcao || 'KBTP'} ➔ ${arrivalIcao}`,
+      flightProfile: this.isDiverting ? 'Tactical Divert (KBVI)' : 'Cross Country (KAGC)',
+      totalDurationHours: this.debriefDurationHours || 0.8,
+      takeoffsCount: this.debriefTakeoffs || 1,
+      landingsCount: this.debriefLandings || 1,
+      compliancePercentage: 100
+    };
+
+    this.flightLogs.unshift(logEntry);
+    localStorage.setItem('flyright_flight_logs', JSON.stringify(this.flightLogs));
+    this.showDebriefModal = false;
+    this.speakAlert('Flight successfully logged to electronic logbook.');
+  }
+
+  closeDebriefModal(): void {
+    this.showDebriefModal = false;
+  }
+
   executeDiversion(): void {
     if (!this.cockpitNavMap || !this.aircraftMarker) return;
     this.isDiverting = !this.isDiverting;
@@ -494,6 +541,14 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.initSpeechEngine();
+    const savedLogs = localStorage.getItem('flyright_flight_logs');
+    if (savedLogs) {
+      try {
+        this.flightLogs = JSON.parse(savedLogs);
+      } catch (e) {
+        console.error('Failed to parse flight logs', e);
+      }
+    }
     const savedPilot = localStorage.getItem('flyright_pilot');
     if (savedPilot) {
       try{
