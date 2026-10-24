@@ -285,13 +285,21 @@ export class AppComponent implements OnInit {
         // Airspace Proximity Detection
         if (this.isDiverting) {
           if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
-            this.activeAirspaceAlert = 'ADVISORY: Approaching KBVI CTAF 123.00 &bull; Monitor Pattern & Winds';
+            const alertMsg = 'ADVISORY: Approaching KBVI CTAF 123.00 &bull; Monitor Pattern & Winds';
+            if (this.activeAirspaceAlert !== alertMsg) {
+              this.activeAirspaceAlert = alertMsg;
+              this.speakAlert('Approaching Beaver County airspace. Monitor CTAF on 123 point 0.');
+            }
           } else {
             this.activeAirspaceAlert = null;
           }
         } else {
           if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
-            this.activeAirspaceAlert = 'ALERT: Entering KAGC Class D Airspace &bull; Contact Tower on 121.10';
+            const alertMsg = 'ALERT: Entering KAGC Class D Airspace &bull; Contact Tower on 121.10';
+            if (this.activeAirspaceAlert !== alertMsg) {
+              this.activeAirspaceAlert = alertMsg;
+              this.speakAlert('Entering Allegheny Class D airspace. Contact Tower on 121 point 1.');
+            }
           } else {
             this.activeAirspaceAlert = null;
           }
@@ -318,6 +326,18 @@ export class AppComponent implements OnInit {
 
   toggleApproachComms(): void {
     this.showApproachCommsDrawer = !this.showApproachCommsDrawer;
+  }
+
+  speakAlert(text: string): void {
+    if (this.isAudioMuted || !this.synth) return;
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      this.synth.speak(utterance);
+    } catch (e) {
+      console.warn('Speech alert unavailable', e);
+    }
   }
 
   executeDiversion(): void {
