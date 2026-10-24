@@ -55,6 +55,7 @@ export class AppComponent implements OnInit {
     eteMin: 15
   };
   showApproachCommsDrawer: boolean = false;
+  isFollowCamActive: boolean = true;
   isDiverting: boolean = false;
   activeAirspaceAlert: string | null = null;
   private activeDiversionVector: L.Polyline | null = null;
@@ -312,7 +313,10 @@ export class AppComponent implements OnInit {
             const inner = iconEl.querySelector('div');
             if (inner) inner.style.transform = `rotate(${this.simTelemetry.headingDeg}deg)`;
           }
-
+          // Follow Cam Auto-Centering
+          if (this.isFollowCamActive && this.cockpitNavMap) {
+            this.cockpitNavMap.panTo(newCoords, { animate: true, duration: 1 });
+          }
           if (this.isDiverting && this.activeDiversionVector) {
             const kbviCoords: [number, number] = [40.7725, -80.3914];
             this.activeDiversionVector.setLatLngs([newCoords, kbviCoords]);
@@ -326,6 +330,13 @@ export class AppComponent implements OnInit {
 
   toggleApproachComms(): void {
     this.showApproachCommsDrawer = !this.showApproachCommsDrawer;
+  }
+
+  toggleFollowCam(): void {
+    this.isFollowCamActive = !this.isFollowCamActive;
+    if (this.isFollowCamActive && this.aircraftMarker && this.cockpitNavMap) {
+      this.cockpitNavMap.panTo(this.aircraftMarker.getLatLng(), { animate: true, duration: 1 });
+    }
   }
 
   speakAlert(text: string): void {
