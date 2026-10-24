@@ -56,6 +56,8 @@ export class AppComponent implements OnInit {
   };
   showApproachCommsDrawer: boolean = false;
   isFollowCamActive: boolean = true;
+  isRadioTransmitting: boolean = false;
+  radioReadbackSuccess: boolean | null = null;
   isDiverting: boolean = false;
   activeAirspaceAlert: string | null = null;
   private activeDiversionVector: L.Polyline | null = null;
@@ -349,6 +351,54 @@ export class AppComponent implements OnInit {
     } catch (e) {
       console.warn('Speech alert unavailable', e);
     }
+  }
+
+  practiceRadioCall(): void {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    if (this.isRadioTransmitting) return;
+
+    this.isRadioTransmitting = true;
+    this.radioReadbackSuccess = null;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      this.isRadioTransmitting = false;
+
+      // Class D expects 'allegheny' or 'skyhawk' / '734sp'
+      // KBVI CTAF expects 'beaver' or 'traffic'
+      const matched = this.isDiverting
+        ? transcript.includes('beaver') || transcript.includes('traffic')
+        : transcript.includes('allegheny') || transcript.includes('skyhawk') || transcript.includes('tower');
+
+      this.radioReadbackSuccess = matched;
+
+      if (matched) {
+        this.speakAlert('Transmission acknowledged. Readback correct.');
+      } else {
+        this.speakAlert('Transmission unreadable. Say again with station callsign.');
+      }
+    };
+
+    recognition.onerror = () => {
+      this.isRadioTransmitting = false;
+      this.radioReadbackSuccess = false;
+    };
+
+    recognition.onend = () => {
+      this.isRadioTransmitting = false;
+    };
+
+    recognition.start();
   }
 
   executeDiversion(): void {

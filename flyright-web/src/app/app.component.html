@@ -278,6 +278,26 @@
           </div>
         </div>
 
+        <!-- Interactive PTT Practice & Readback Status -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0 8px;">
+          <button type="button"
+                  (click)="practiceRadioCall()"
+                  [disabled]="isRadioTransmitting"
+                  [style.background]="isRadioTransmitting ? '#ef4444' : '#0284c7'"
+                  style="color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 6px; padding: 8px 14px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+            <span>{{ isRadioTransmitting ? '🎙️ Transmitting...' : '🎙️ Practice Readback' }}</span>
+          </button>
+          
+          <div *ngIf="radioReadbackSuccess === true" 
+               style="font-size: 10px; font-weight: 700; color: #4ade80; text-transform: uppercase; letter-spacing: 0.5px;">
+            ✓ Readback Verified
+          </div>
+          <div *ngIf="radioReadbackSuccess === false" 
+               style="font-size: 10px; font-weight: 700; color: #f87171; text-transform: uppercase; letter-spacing: 0.5px;">
+            ✗ Unreadable - Try Again
+          </div>
+        </div>
+
         <!-- Frequency Quick-Tune Badges -->
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; text-align: center;">
