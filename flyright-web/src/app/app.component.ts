@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     distRemainingNm: 27.2,
     eteMin: 15
   };
-
+  showApproachCommsDrawer: boolean = false;
   isDiverting: boolean = false;
   activeAirspaceAlert: string | null = null;
   private activeDiversionVector: L.Polyline | null = null;
@@ -180,6 +180,17 @@ export class AppComponent implements OnInit {
         .addTo(this.cockpitNavMap)
         .bindTooltip('DEST: KAGC (Allegheny Co)', { permanent: true, direction: 'bottom' });
 
+      // Class D Airspace Boundary (5 NM radius around KAGC ~ 9,260 meters)
+      L.circle(kagcCoords, {
+        radius: 9260,
+        color: '#38bdf8',
+        weight: 2,
+        dashArray: '6, 6',
+        fillColor: '#0284c7',
+        fillOpacity: 0.08
+      }).addTo(this.cockpitNavMap)
+        .bindTooltip('KAGC CLASS D SURFACE AREA (CEILING 3,800 MSL)', { permanent: false, direction: 'top' });
+
       // Tactical Emergency Diversion Leg: KBVI (Amber dashed)
       if (this.missionForm.alternateIcao || this.missionForm.flightType === 'CROSS_COUNTRY') {
         L.polyline([kbtpCoords, kbviCoords], {
@@ -303,6 +314,10 @@ export class AppComponent implements OnInit {
     } else {
       clearInterval(this.simIntervalId);
     }
+  }
+
+  toggleApproachComms(): void {
+    this.showApproachCommsDrawer = !this.showApproachCommsDrawer;
   }
 
   executeDiversion(): void {
