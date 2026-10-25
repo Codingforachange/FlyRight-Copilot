@@ -1530,4 +1530,119 @@ aside.radio-drawer.open,
     width: 100vw !important;
     max-width: 100vw !important;
   }
+
+  /* --- 1. TOP FLIGHT HUD FIX (IPHONE & HANDHELD) --- */
+  header.header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  .header-left {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .airspace-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  .pilot-badge {
+    margin-top: 2px !important;
+  }
+
+  /* --- 2. CHECKLIST HEADER COLLISION FIX --- */
+  .card-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 8px !important;
+  }
+
+  .card-header .voice-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .card-header h2 {
+    font-size: 1.1rem !important;
+    text-align: center !important;
+    margin: 4px 0 !important;
+  }
+
+  .card-header .phase-tag {
+    display: inline-block !important;
+    text-align: center !important;
+    margin-bottom: 6px !important;
+  }
+
+  .card-header .instrument-gauge {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  /* --- 3. PRE-FLIGHT ONBOARDING MODAL MOBILE STACK --- */
+  .form-row,
+  .modal-form-row,
+  .input-group-row,
+  .briefing-row,
+  [class*="form-row"],
+  [class*="grid-2"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .form-group,
+  .input-field,
+  .modal-card input,
+  .modal-card select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* --- 4. PRE-FLIGHT BRIEFING MODAL SCROLL & PADDING FIX --- */
+  .modal-overlay,
+  .modal-backdrop,
+  .briefing-modal-overlay,
+  [class*="modal-backdrop"],
+  [class*="modal-overlay"] {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 24px 10px 40px 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-card,
+  .briefing-modal,
+  [class*="modal-card"] {
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 16px auto !important;
+    padding: 1.25rem 1rem !important;
+    border-radius: 12px !important;
+  }
 }

@@ -1278,13 +1278,55 @@ export class AppComponent implements OnInit {
   }
 
   resetAll(): void {
+    // 1. Reset checklists via service
     this.checklistService.resetChecklist('C172S').subscribe({
       next: () => {
-        this.checklists.forEach(cl => cl.items?.forEach(i => i.isCompleted = false));
+        this.checklists?.forEach(cl => cl.items?.forEach(i => i.isCompleted = false));
         this.activeChecklistIndex = 0;
-        this.speakCue('Checklist reset.');
       },
       error: (err) => console.error('Failed to reset checklist:', err)
     });
+
+    // 2. Stop active flight simulation loop
+    if ((this as any).simIntervalId) {
+      clearInterval((this as any).simIntervalId);
+      (this as any).simIntervalId = null;
+    }
+    this.isSimTracking = false;
+    this.isDiverting = false;
+    (this as any).activeAirspaceAlert = null;
+    (this as any).showApproachCommsDrawer = false;
+
+    // 3. Remove tactical diversion vector if drawn
+    if (this.activeDiversionVector && this.cockpitNavMap) {
+      this.activeDiversionVector.remove();
+      this.activeDiversionVector = null;
+    }
+
+    // 4. Reset telemetry to departure baseline
+    this.simTelemetry = {
+      groundSpeedKts: 105,
+      altitudeFt: 3000,
+      headingDeg: 175,
+      distRemainingNm: 27.2,
+      eteMin: 15
+    };
+
+    // 5. Reposition aircraft icon back to Butler (KBTP)
+    if (this.aircraftMarker && this.cockpitNavMap) {
+      const departureCoords: [number, number] = [40.7767, -79.9494];
+      this.aircraftMarker.setLatLng(departureCoords);
+      this.cockpitNavMap.panTo(departureCoords);
+
+      const iconEl = this.aircraftMarker.getElement();
+      if (iconEl) {
+        const inner = iconEl.querySelector('div');
+        if (inner) {
+          inner.style.transform = 'rotate(175deg)';
+        }
+      }
+    }
+
+    this.speakCue('Aircraft systems and checklists reset.');
   }
 }
