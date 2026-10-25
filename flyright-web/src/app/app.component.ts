@@ -280,7 +280,8 @@ export class AppComponent implements OnInit {
         }
 
         const newCoords: [number, number] = [current[0], current[1]];
-        this.simTelemetry.headingDeg = current[2];
+        const wcaData = this.calculateWindCorrection(current[2], this.simTelemetry.groundSpeedKts || 105);
+        this.simTelemetry.headingDeg = wcaData.headingDeg;
         this.simTelemetry.altitudeFt = current[3];
         this.simTelemetry.distRemainingNm = current[4];
         this.simTelemetry.eteMin = current[5];
@@ -460,6 +461,28 @@ export class AppComponent implements OnInit {
     this.showDebriefModal = false;
   }
 
+  calculateWindCorrection(groundTrack: number, tasKts: number = 105): { wcaDeg: number; headingDeg: number } {
+    if (!this.currentMetar || !this.currentMetar.windSpeed) {
+      return { wcaDeg: 0, headingDeg: groundTrack };
+    }
+
+    const windDir = (this.currentMetar as any).windDirection ?? (this.currentMetar as any).windDir ?? 20;
+    const windSpeed = (this.currentMetar as any).windSpeed ?? 4;
+
+    // Angle between wind direction and aircraft track
+    const angleDiffRad = ((windDir - groundTrack) * Math.PI) / 180;
+    const crosswind = windSpeed * Math.sin(angleDiffRad);
+
+    // Wind Correction Angle (asin of crosswind / true airspeed)
+    const ratio = Math.max(-1, Math.min(1, crosswind / (tasKts || 105)));
+    const wcaDeg = Math.round((Math.asin(ratio) * 180) / Math.PI);
+
+    // Heading = Course + WCA (normalized 0-359)
+    const headingDeg = (Math.round(groundTrack + wcaDeg) + 360) % 360;
+
+    return { wcaDeg, headingDeg };
+  }
+
   executeDiversion(): void {
     if (!this.cockpitNavMap || !this.aircraftMarker) return;
     this.isDiverting = !this.isDiverting;
@@ -485,11 +508,12 @@ export class AppComponent implements OnInit {
       }).openTooltip();
 
       // Immediately reorient aircraft heading toward KBVI (west-northwest ~275°)
-      this.simTelemetry.headingDeg = 275;
+      const divertWca = this.calculateWindCorrection(275, this.simTelemetry.groundSpeedKts || 105);
+      this.simTelemetry.headingDeg = divertWca.headingDeg;
       const iconEl = this.aircraftMarker.getElement();
       if (iconEl) {
         const inner = iconEl.querySelector('div');
-        if (inner) inner.style.transform = `rotate(275deg)`;
+        if (inner) inner.style.transform = `rotate(${divertWca.headingDeg}deg)`;
       }
     } else {
       if (this.activeDiversionVector) {
