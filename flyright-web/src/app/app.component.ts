@@ -438,8 +438,20 @@ export class AppComponent implements OnInit {
       compliancePercentage: 100
     };
 
-    this.flightLogs.unshift(logEntry);
-    localStorage.setItem('flyright_flight_logs', JSON.stringify(this.flightLogs));
+    // Read existing persisted local logs, prepend this flight, then save
+    let localLogs: any[] = [];
+    const saved = localStorage.getItem('flyright_flight_logs');
+    if (saved) {
+      try {
+        localLogs = JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    localLogs.unshift(logEntry);
+    localStorage.setItem('flyright_flight_logs', JSON.stringify(localLogs));
+
+    this.flightLogs = [...localLogs, ...(this.flightLogs || [])];
     this.showDebriefModal = false;
     this.speakAlert('Flight successfully logged to electronic logbook.');
   }
@@ -995,14 +1007,31 @@ export class AppComponent implements OnInit {
   }
 
   openLogbook(): void {
+    // 1. Load any local simulation logs from localStorage
+    let localLogs: any[] = [];
+    const saved = localStorage.getItem('flyright_flight_logs');
+    if (saved) {
+      try {
+        localLogs = JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 2. Fetch backend logs and merge local logs on top
     this.pilotService.getFlightLogs().subscribe({
       next: (logs) => {
-        this.flightLogs = logs;
+        // Local entries take precedence at the top, followed by database logs
+        this.flightLogs = [...localLogs, ...(logs || [])];
         this.showLogbookModal = true;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load flight logs from database:', err);
+        // Fallback to local logs if offline or backend is unreachable
+        this.flightLogs = localLogs;
+        this.showLogbookModal = true;
+        this.cdr.detectChanges();
       }
     });
   }
