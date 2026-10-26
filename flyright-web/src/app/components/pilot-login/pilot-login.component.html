@@ -1,0 +1,54 @@
+<div class="pilot-auth-backdrop">
+  <div class="pilot-auth-card">
+    <div class="brand-crest">
+      <div class="crest-wings">✈</div>
+      <div class="crest-title">FLYRIGHT CO-PILOT</div>
+      <div class="crest-subtitle">ELECTRONIC FLIGHT BAG • PILOT CLEARANCE</div>
+    </div>
+
+    <form (ngSubmit)="handleAuthSubmit()" class="auth-form" novalidate>
+      <div class="input-group">
+        <label for="pilotName">PILOT IN COMMAND / CALLSIGN</label>
+        <input
+          id="pilotName"
+          name="pilotName"
+          type="text"
+          [(ngModel)]="pilotName"
+          placeholder="e.g. Mike Pelino or Skyhawk 734SP"
+          autocomplete="off"
+          required
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="pilotEmail">FLIGHT CLEARANCE EMAIL</label>
+        <input
+          id="pilotEmail"
+          name="pilotEmail"
+          type="email"
+          [(ngModel)]="pilotEmail"
+          placeholder="pilot@flyrightcopilot.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div *ngIf="authError" class="auth-error-banner">
+        {{ authError }}
+      </div>
+
+      <button type="submit" class="auth-submit-btn" [disabled]="isVerifying">
+        <span *ngIf="!isVerifying">VERIFY SUBSCRIPTION & ENTER FLIGHT DECK</span>
+        <span *ngIf="isVerifying" class="verifying-label">
+          <span class="btn-spinner"></span> VERIFYING SATELLITE DISPATCH...
+        </span>
+      </button>
+    </form>
+
+    <div class="card-footer">
+      <span>FAA PART 91/141 READY</span>
+      <span>•</span>
+      <span>CLOUD TELEMETRY ACTIVE</span>
+    </div>
+  </div>
+</div>

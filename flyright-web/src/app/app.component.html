@@ -1,4 +1,5 @@
-
+<app-flight-loading *ngIf="showFlightLoading"></app-flight-loading>
+<app-pilot-login *ngIf="showAuthModal" (loginSuccess)="onPilotAuthenticated($event)"></app-pilot-login>
   <div class="cockpit-container">
   <header class="header">
     <div class="header-left">
@@ -315,63 +316,6 @@
         </div>
       </div>
     <div id="cockpitNavMap" class="cockpit-nav-canvas"></div>
-  </div>
-    
-  <!-- 1. PILOT SUBSCRIPTION & AUTH GATE -->
-  <div class="modal-overlay" *ngIf="showAuthModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="badge-tag">MEMBER GATE</div>
-        <h2>{{ authMode === 'register' ? 'Pilot Registration & Subscription' : 'Welcome Back, Aviator' }}</h2>
-        <p class="modal-sub">
-          {{ authMode === 'register' 
-              ? 'Set up your electronic flight bag profile to sync mission data and pre-flights.' 
-              : 'Sign in to access your flight logs and mission profiles.' }}
-        </p>
-      </div>
-
-      <form (ngSubmit)="submitAuth()">
-        <div class="form-group" *ngIf="authMode === 'register'">
-          <label>Pilot Name (PIC)</label>
-          <input type="text" [(ngModel)]="pilotForm.name" name="pilotName" placeholder="e.g. Capt. Mike Pelino" required />
-        </div>
-
-        <div class="form-group">
-          <label>Pilot Email Address</label>
-          <input type="email" [(ngModel)]="pilotForm.email" name="pilotEmail" placeholder="pilot@flyright.aero" required />
-        </div>
-
-        <div class="form-group" *ngIf="authMode === 'register'">
-          <label>Flight Experience Stage</label>
-          <select [(ngModel)]="pilotForm.experienceStage" name="pilotStage">
-            <option value="Student Pilot (Pre-Solo)">Student Pilot (Pre-Solo)</option>
-            <option value="Student Pilot (Solo Cross-Country)">Student Pilot (Solo Cross-Country)</option>
-            <option value="Checkride Prep">Checkride Prep</option>
-            <option value="Sport Pilot">Sport Pilot (LSA / MOSAIC)</option>
-            <option value="Private Pilot (PPL)">Private Pilot (PPL)</option>
-          </select>
-        </div>
-
-        <div class="error-banner" *ngIf="authError">
-          {{ authError }}
-        </div>
-
-        <div class="modal-actions">
-          <button type="submit" class="btn-primary">
-            {{ authMode === 'register' ? 'Activate Subscription & Continue' : 'Sign In' }}
-          </button>
-        </div>
-      </form>
-
-      <div class="auth-toggle">
-        <span *ngIf="authMode === 'register'">
-          Already subscribed? <a (click)="authMode = 'login'; authError = ''">Sign in here</a>
-        </span>
-        <span *ngIf="authMode === 'login'">
-          New student pilot? <a (click)="authMode = 'register'; authError = ''">Create profile</a>
-        </span>
-      </div>
-    </div>
   </div>
 
   <!-- 2. PRE-FLIGHT MISSION SETUP MODAL -->

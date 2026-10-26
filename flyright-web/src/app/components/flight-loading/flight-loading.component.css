@@ -1,0 +1,81 @@
+.sky-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 60%, #1e293b 0%, #0a0f1d 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.flight-corridor {
+  position: relative;
+  width: 100vw;
+  height: 60vh;
+  display: flex;
+  align-items: center;
+}
+
+.plane-banner-rig {
+  position: absolute;
+  right: -900px;
+  animation: flyRightToLeft 4.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  will-change: transform;
+}
+
+.banner-img {
+  height: clamp(200px, 40vh, 380px);
+  width: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65);
+  filter: drop-shadow(0 10px 25px rgba(56, 189, 248, 0.25));
+}
+
+@keyframes flyRightToLeft {
+  0% {
+    transform: translateX(0) translateY(40px) rotate(1.5deg);
+  }
+  50% {
+    transform: translateX(calc(-50vw - 250px)) translateY(-15px) rotate(-1deg);
+  }
+  100% {
+    transform: translateX(calc(-100vw - 1100px)) translateY(-35px) rotate(0.5deg);
+  }
+}
+
+.loading-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 1.5rem;
+  padding: 8px 18px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.status-radar-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(56, 189, 248, 0.2);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.status-text {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #38bdf8;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -6,6 +6,8 @@ import { PilotService } from './services/pilot.service';
 import { Pilot, FlightMission } from './models/pilot.model';
 import { FormsModule } from '@angular/forms';
 import { WeatherService, MetarBriefing } from './services/weather.service';
+import { FlightLoadingComponent } from './components/flight-loading/flight-loading.component';
+import { PilotLoginComponent } from './components/pilot-login/pilot-login.component';
 import { from } from 'rxjs';
 
 import * as L from 'leaflet';
@@ -14,11 +16,12 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlightLoadingComponent, PilotLoginComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
+  showFlightLoading: boolean = false;
   title = 'FlyRight Copilot';
   checklists: Checklist[] = [];
   activeChecklistIndex: number = 0;
@@ -908,8 +911,33 @@ export class AppComponent implements OnInit {
     }
   }
 
+  onPilotAuthenticated(authData: { pilotName: string; email: string }): void {
+    const pilotId = Date.now();
+    this.currentPilot = {
+      id: pilotId,
+      name: authData.pilotName,
+      email: authData.email
+    } as any;
+
+    localStorage.setItem('flyright_pilot', JSON.stringify(this.currentPilot));
+    (this.missionForm as any).pilot = this.currentPilot;
+    this.showAuthModal = false;
+    this.showMissionModal = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      if ((this as any).initMissionMap) (this as any).initMissionMap();
+      if ((this as any).updateAirportDiagram) (this as any).updateAirportDiagram();
+      if ((this as any).briefingMap) (this as any).briefingMap.invalidateSize();
+    }, 150);
+
+    setTimeout(() => {
+      if ((this as any).briefingMap) (this as any).briefingMap.invalidateSize();
+    }, 400);
+  }
+
   confirmMission(): void {
-    if (!this.currentPilot?.id) return;
+    if (!this.currentPilot) return;
     this.missionForm.pilot = this.currentPilot;
 
     const selectedCode = this.missionForm.aircraftModelCode || 'C172S';
@@ -920,15 +948,28 @@ export class AppComponent implements OnInit {
     this.pilotService.createMission(this.missionForm).subscribe({
       next: () => {
         this.showMissionModal = false;
-        this.onBoardingCompleted = true;
+        this.showFlightLoading = true;
+
+        setTimeout(() => {
+          this.showFlightLoading = false;
+          this.onBoardingCompleted = true;
+          this.cdr.detectChanges();
+        }, 4200);
+
         this.loadChecklist(this.missionForm.aircraftModelCode);
         this.fetchWeatherBriefing(this.missionForm.departureIcao);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Mission creation failed', err);
-        // Fallback to offline initialization
         this.showMissionModal = false;
-        this.onBoardingCompleted = true;
+        this.showFlightLoading = true;
+
+        setTimeout(() => {
+          this.showFlightLoading = false;
+          this.onBoardingCompleted = true;
+          this.cdr.detectChanges();
+        }, 4200);
+
         this.loadChecklist(this.missionForm.aircraftModelCode);
       }
     });
