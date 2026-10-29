@@ -1,5 +1,5 @@
-<app-flight-loading *ngIf="showFlightLoading"></app-flight-loading>
 <app-pilot-login *ngIf="showAuthModal" (loginSuccess)="onPilotAuthenticated($event)"></app-pilot-login>
+<app-flight-loading *ngIf="showFlightLoading"></app-flight-loading>
   <div class="cockpit-container">
   <header class="header">
     <div class="header-left">

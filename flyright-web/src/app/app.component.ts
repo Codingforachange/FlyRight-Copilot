@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { WeatherService, MetarBriefing } from './services/weather.service';
 import { FlightLoadingComponent } from './components/flight-loading/flight-loading.component';
 import { PilotLoginComponent } from './components/pilot-login/pilot-login.component';
+import { AirportService } from './services/airport.service';
 import { from } from 'rxjs';
 
 import * as L from 'leaflet';
@@ -115,7 +116,7 @@ export class AppComponent implements OnInit {
       this.briefingMap?.invalidateSize();
     }, 200);
   }
-  initCockpitNavMap(): void {
+    initCockpitNavMap(): void {
     if (this.cockpitNavMap) {
       this.cockpitNavMap.remove();
       this.cockpitNavMap = null;
@@ -125,90 +126,91 @@ export class AppComponent implements OnInit {
       const el = document.getElementById('cockpitNavMap');
       if (!el) return;
 
-      // Centered between Butler (KBTP) and Allegheny County (KAGC)
-      this.cockpitNavMap = L.map('cockpitNavMap', {
+      const isPattern = this.missionForm.flightType === 'PATTERN';
+
+      const dep = this.airportService.getAerodrome(this.missionForm.departureIcao || 'KBTP');
+      const dest = this.airportService.getAerodrome(this.missionForm.destinationIcao || (isPattern ? dep.icao : 'KAGC'));
+      const alt = this.missionForm.alternateIcao ? this.airportService.getAerodrome(this.missionForm.alternateIcao) : null;
+
+      const depCoords: [number, number] = [dep.lat, dep.lng];
+      const destCoords: [number, number] = [dest.lat, dest.lng];
+
+      const mapCenter: [number, number] = isPattern
+        ? depCoords
+        : [((dep.lat + dest.lat) / 2), ((dep.lng + dest.lng) / 2)];
+      const initialZoom = isPattern ? 13 : 10;
+
+      this.cockpitNavMap = (L as any).map('cockpitNavMap', {
         attributionControl: false,
         zoomControl: true
-      }).setView([40.5600, -79.9400], 10);
+      }).setView(mapCenter, initialZoom);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      (L as any).tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18
       }).addTo(this.cockpitNavMap);
 
-      // Core Aerodrome Coordinates
-      const kbtpCoords: [number, number] = [40.7767, -79.9494]; // Butler Co Regional
-      const kagcCoords: [number, number] = [40.3544, -79.9302]; // Allegheny Co
-      const kbviCoords: [number, number] = [40.7725, -80.3914]; // Beaver Co Alternate
+      // Departure Aerodrome Marker
+      (L as any).circleMarker(depCoords, { radius: 8, color: '#38bdf8', fillColor: '#0284c7', fillOpacity: 0.95 })
+        .addTo(this.cockpitNavMap)
+        .bindTooltip(`DEP: ${dep.icao} - ${dep.name}`, { permanent: true, direction: 'top' });
 
-      // Visual Reference Points (VRPs) along corridor
-      const vrp1Coords: [number, number] = [40.6400, -79.8800]; // Route 28 Corridor
-      const vrp2Coords: [number, number] = [40.4850, -79.8700]; // Allegheny River Crossing
+      if (isPattern) {
+        // Draw standard traffic pattern circuit
+        const patternBox = this.airportService.calculateTrafficPattern(dep.lat, dep.lng, dep.runwayHeadingDeg);
+        (L as any).polyline(patternBox, {
+          color: '#38bdf8',
+          weight: 3,
+          dashArray: '6, 6',
+          opacity: 0.9
+        }).addTo(this.cockpitNavMap)
+          .bindTooltip(`${dep.icao} Left Pattern (1,000 ft AGL)`, { permanent: false, direction: 'top' });
+      } else {
+         // Dynamic visual waypoints for the corridor
+      const waypoints = this.airportService.getCorridorWaypoints(dep.icao, dest.icao, dep, dest);
 
-      // Active Cross-Country Route Corridor (Cyan dashed)
-      const xcRoute = [kbtpCoords, vrp1Coords, vrp2Coords, kagcCoords];
-      L.polyline(xcRoute, {
+      const xcRoute = [depCoords, ...waypoints.map(w => w.coords), destCoords];
+      (L as any).polyline(xcRoute, {
         color: '#0284c7',
         weight: 4,
         dashArray: '8, 8',
         opacity: 0.9
       }).addTo(this.cockpitNavMap);
 
-      // Departure: KBTP
-      L.circleMarker(kbtpCoords, { radius: 8, color: '#38bdf8', fillColor: '#0284c7', fillOpacity: 0.95 })
-        .addTo(this.cockpitNavMap)
-        .bindTooltip('DEP: KBTP (Butler Co)', { permanent: true, direction: 'top' });
+      waypoints.forEach(wp => {
+        (L as any).circleMarker(wp.coords, { radius: 7, color: '#e879f9', fillColor: '#c084fc', fillOpacity: 0.95 })
+          .addTo(this.cockpitNavMap)
+          .bindPopup(`<strong>${wp.label}</strong><br>${wp.desc}`);
+      });
 
-      // Visual Reference Points (VRPs) with Leg Telemetry
-      L.circleMarker(vrp1Coords, { radius: 7, color: '#e879f9', fillColor: '#c084fc', fillOpacity: 0.95 })
-        .addTo(this.cockpitNavMap)
-        .bindPopup(`
-          <div style="color: #0f172a; font-family: sans-serif; font-size: 12px; line-height: 1.4;">
-            <strong style="color: #7e22ce; font-size: 13px;">VRP 1: PA Route 28 Corridor</strong><br/>
-            <b>Track:</b> 168° Magnetic &bull; 9.2 NM from KBTP<br/>
-            <b>Target Alt:</b> 3,000 ft MSL<br/>
-            <b>Visual Cue:</b> Expressway cloverleaf intersection
-          </div>
-        `);
+        // Destination Aerodrome Marker
+        (L as any).circleMarker(destCoords, { radius: 8, color: '#4ade80', fillColor: '#16a34a', fillOpacity: 0.95 })
+          .addTo(this.cockpitNavMap)
+          .bindTooltip(`DEST: ${dest.icao} - ${dest.name}`, { permanent: true, direction: 'bottom' });
 
-      L.circleMarker(vrp2Coords, { radius: 7, color: '#e879f9', fillColor: '#c084fc', fillOpacity: 0.95 })
-        .addTo(this.cockpitNavMap)
-        .bindPopup(`
-          <div style="color: #0f172a; font-family: sans-serif; font-size: 12px; line-height: 1.4;">
-            <strong style="color: #7e22ce; font-size: 13px;">VRP 2: Allegheny River Crossing</strong><br/>
-            <b>Track:</b> 175° Magnetic &bull; 10.1 NM from VRP 1<br/>
-            <b>Target Alt:</b> 3,000 ft MSL<br/>
-            <b>Visual Cue:</b> Highland Park Dam & lock structure
-          </div>
-        `);
-
-      // Destination: KAGC
-      L.circleMarker(kagcCoords, { radius: 8, color: '#4ade80', fillColor: '#16a34a', fillOpacity: 0.95 })
-        .addTo(this.cockpitNavMap)
-        .bindTooltip('DEST: KAGC (Allegheny Co)', { permanent: true, direction: 'bottom' });
-
-      // Class D Airspace Boundary (5 NM radius around KAGC ~ 9,260 meters)
-      L.circle(kagcCoords, {
-        radius: 9260,
-        color: '#38bdf8',
-        weight: 2,
-        dashArray: '6, 6',
-        fillColor: '#0284c7',
-        fillOpacity: 0.08
-      }).addTo(this.cockpitNavMap)
-        .bindTooltip('KAGC CLASS D SURFACE AREA (CEILING 3,800 MSL)', { permanent: false, direction: 'top' });
-
-      // Tactical Emergency Diversion Leg: KBVI (Amber dashed)
-      if (this.missionForm.alternateIcao || this.missionForm.flightType === 'CROSS_COUNTRY') {
-        L.polyline([kbtpCoords, kbviCoords], {
-          color: '#f59e0b',
-          weight: 3,
-          dashArray: '6, 10',
-          opacity: 0.8
+        // Destination Airspace Ring (5 NM Class D)
+        (L as any).circle(destCoords, {
+          radius: 9260,
+          color: '#38bdf8',
+          weight: 2,
+          dashArray: '6, 6',
+          fillColor: '#0284c7',
+          fillOpacity: 0.08
         }).addTo(this.cockpitNavMap);
 
-        L.circleMarker(kbviCoords, { radius: 7, color: '#f59e0b', fillColor: '#d97706', fillOpacity: 0.9 })
-          .addTo(this.cockpitNavMap)
-          .bindTooltip(`ALT DIVERSION: ${this.missionForm.alternateIcao || 'KBVI'}`, { permanent: true, direction: 'left' });
+        // Tactical Emergency Diversion Leg
+        if (alt) {
+          const altCoords: [number, number] = [alt.lat, alt.lng];
+          (L as any).polyline([depCoords, altCoords], {
+            color: '#f59e0b',
+            weight: 3,
+            dashArray: '6, 10',
+            opacity: 0.8
+          }).addTo(this.cockpitNavMap);
+
+          (L as any).circleMarker(altCoords, { radius: 7, color: '#f59e0b', fillColor: '#d97706', fillOpacity: 0.9 })
+            .addTo(this.cockpitNavMap)
+            .bindTooltip(`ALT DIVERSION: ${alt.icao} - ${alt.name}`, { permanent: true, direction: 'left' });
+        }
       }
 
       setTimeout(() => {
@@ -574,6 +576,7 @@ export class AppComponent implements OnInit {
   constructor(
     private checklistService: ChecklistService,
     private pilotService: PilotService,
+    private airportService: AirportService,
     private weatherService: WeatherService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -925,17 +928,22 @@ export class AppComponent implements OnInit {
     this.showMissionModal = true;
     this.cdr.detectChanges();
 
-    setTimeout(() => {
-      if ((this as any).initMissionMap) (this as any).initMissionMap();
-      if ((this as any).updateAirportDiagram) (this as any).updateAirportDiagram();
-      if ((this as any).briefingMap) (this as any).briefingMap.invalidateSize();
-    }, 150);
+    const triggerMapRender = () => {
+      const depIcao = (this.missionForm as any)?.departureIcao || 'KBTP';
+      if ((this as any).initBriefingMap) {
+        (this as any).initBriefingMap();
+      }
+      if ((this as any).updateAirportVisuals) {
+        (this as any).updateAirportVisuals(depIcao);
+      }
+      if ((this as any).briefingMap) {
+        (this as any).briefingMap.invalidateSize();
+      }
+    };
 
-    setTimeout(() => {
-      if ((this as any).briefingMap) (this as any).briefingMap.invalidateSize();
-    }, 400);
+    setTimeout(triggerMapRender, 150);
+    setTimeout(triggerMapRender, 450);
   }
-
   confirmMission(): void {
     if (!this.currentPilot) return;
     this.missionForm.pilot = this.currentPilot;
