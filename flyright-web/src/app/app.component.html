@@ -1,5 +1,6 @@
 <app-pilot-login *ngIf="showAuthModal" (loginSuccess)="onPilotAuthenticated($event)"></app-pilot-login>
 <app-flight-loading *ngIf="showFlightLoading"></app-flight-loading>
+
   <div class="cockpit-container">
   <header class="header">
     <div class="header-left">
@@ -266,17 +267,12 @@
         
         <!-- Radio Call Script -->
         <div style="flex: 1; min-width: 260px;">
-          <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px;">
-            {{ isDiverting ? 'KBVI Inbound Advisory Call' : 'KAGC Class D Entry Call' }}
-          </div>
-          <div style="font-size: 13px; font-style: italic; color: #e2e8f0; background: rgba(30, 41, 59, 0.8); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #38bdf8;">
-            <ng-container *ngIf="!isDiverting">
-              "Allegheny Tower, Skyhawk 734SP, 8 miles north, inbound for landing with Information [Current ATIS]."
-            </ng-container>
-            <ng-container *ngIf="isDiverting">
-              "Beaver County Traffic, Skyhawk 734SP, 8 miles east, inbound full stop, runway 28, Beaver County."
-            </ng-container>
-          </div>
+           <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px;">
+          {{ activeApproachBriefing.title }}
+        </div>
+        <div style="font-size: 13px; font-style: italic; color: #e2e8f0; background: rgba(30, 41, 59, 0.8); padding: 8px 12px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+          {{ activeApproachBriefing.script }}
+        </div>
         </div>
 
         <!-- Interactive PTT Practice & Readback Status -->

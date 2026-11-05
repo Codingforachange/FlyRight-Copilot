@@ -67,54 +67,41 @@ export class AppComponent implements OnInit {
   private activeDiversionVector: L.Polyline | null = null;
 
   initBriefingMap(): void {
+    const mapEl = document.getElementById('briefingMap');
+    if (!mapEl) return;
+
     if (this.briefingMap) {
       this.briefingMap.remove();
       this.briefingMap = null;
     }
 
-    const lat = 40.7767;
-    const lng = -79.9494;
+    const defaultIcao = this.missionForm.departureIcao || 'KBTP';
+    const dep = this.airportService.getAerodrome(defaultIcao);
 
-    this.briefingMap = L.map('briefingMap', {
-      center: [lat, lng],
+    this.briefingMap = (L as any).map('briefingMap', {
+      center: [dep.lat, dep.lng],
       zoom: 14,
-      zoomControl: true
+      zoomControl: true,
+      attributionControl: false
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
+    (L as any).tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18
     }).addTo(this.briefingMap);
 
-    const rwyLine = L.polyline([
-      [40.7785, -79.9575],
-      [40.7750, -79.9410]
-    ], {
-      color: '#38bdf8',
-      weight: 6,
-      opacity: 0.95
-    }).addTo(this.briefingMap);
-
-    rwyLine.bindTooltip('RWY 08/26 (4,001 ft)', { permanent: true, direction: 'top' });
-
-    const trafficPattern = L.polygon([
-      [40.7785, -79.9575],
-      [40.7850, -79.9575],
-      [40.7850, -79.9410],
-      [40.7750, -79.9410]
-    ], {
-      color: '#f59e0b',
-      dashArray: '6, 6',
-      weight: 2,
-      fillColor: '#f59e0b',
-      fillOpacity: 0.12
-    }).addTo(this.briefingMap);
-
-    trafficPattern.bindTooltip('Standard Left Traffic (1,000 ft AGL)', { direction: 'center' });
+    // Staggered layout invalidation so the modal canvas is visible before vector draw
+    setTimeout(() => {
+      if (this.briefingMap) {
+        this.briefingMap.invalidateSize();
+        this.updateAirportVisuals(defaultIcao);
+      }
+    }, 150);
 
     setTimeout(() => {
-      this.briefingMap?.invalidateSize();
-    }, 200);
+      if (this.briefingMap) {
+        this.briefingMap.invalidateSize();
+      }
+    }, 350);
   }
     initCockpitNavMap(): void {
     if (this.cockpitNavMap) {
@@ -129,7 +116,7 @@ export class AppComponent implements OnInit {
       const isPattern = this.missionForm.flightType === 'PATTERN';
 
       const dep = this.airportService.getAerodrome(this.missionForm.departureIcao || 'KBTP');
-      const dest = this.airportService.getAerodrome(this.missionForm.destinationIcao || (isPattern ? dep.icao : 'KAGC'));
+      const dest = this.airportService.getAerodrome(this.missionForm.destinationIcao || dep.icao);
       const alt = this.missionForm.alternateIcao ? this.airportService.getAerodrome(this.missionForm.alternateIcao) : null;
 
       const depCoords: [number, number] = [dep.lat, dep.lng];
@@ -219,14 +206,16 @@ export class AppComponent implements OnInit {
       }, 250);
     }, 100);
   }
-  initAircraftMarker(): void {
+   initAircraftMarker(): void {
     if (!this.cockpitNavMap) return;
 
-    const startPos: [number, number] = [40.7767, -79.9494]; // KBTP
-    const planeIcon = L.divIcon({
+    const dep = this.airportService.getAerodrome(this.missionForm.departureIcao || 'KBTP');
+    const startPos: [number, number] = [dep.lat, dep.lng];
+
+    const planeIcon = (L as any).divIcon({
       className: 'aircraft-nav-icon',
       html: `
-        <div style="transform: rotate(${this.simTelemetry.headingDeg}deg); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+        <div style="transform: rotate(${dep.runwayHeadingDeg}deg); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 4px rgba(0,0,0,0.8));">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="#38bdf8">
             <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
           </svg>
@@ -236,117 +225,141 @@ export class AppComponent implements OnInit {
       iconAnchor: [16, 16]
     });
 
-    if (this.aircraftMarker) {
-      this.aircraftMarker.remove();
+    const marker = (this as any).aircraftMarker;
+    if (marker) {
+      marker.setLatLng(startPos);
+      marker.setIcon(planeIcon);
+    } else {
+      (this as any).aircraftMarker = (L as any).marker(startPos, { icon: planeIcon }).addTo(this.cockpitNavMap);
     }
-    this.aircraftMarker = L.marker(startPos, { icon: planeIcon }).addTo(this.cockpitNavMap);
   }
 
   toggleSimFlight(): void {
     this.isSimTracking = !this.isSimTracking;
     if (this.isSimTracking) {
-      const defaultFlightPoints: [number, number, number, number, number, number][] = [
-        // lat, lng, trk, alt, distRemaining, eteMin
-        [40.7767, -79.9494, 168, 1200, 27.2, 16], // KBTP Climb
-        [40.7083, -79.9147, 168, 2500, 22.8, 13],
-        [40.6400, -79.8800, 175, 3000, 18.0, 10], // VRP 1
-        [40.5625, -79.8750, 175, 3000, 13.5, 8],
-        [40.4850, -79.8700, 198, 2800, 8.2, 5], // VRP 2
-        [40.4197, -79.9001, 198, 2400, 4.1, 2],
-        [40.3544, -79.9302, 198, 1250, 0.0, 0] // KAGC Approach
-      ];
+      const dep = this.airportService.getAerodrome(this.missionForm.departureIcao || 'KBTP');
+      const isPattern = this.missionForm.flightType === 'PATTERN';
+      const dest = isPattern ? dep : this.airportService.getAerodrome(this.missionForm.destinationIcao || dep.icao);
+      const alt = this.missionForm.alternateIcao ? this.airportService.getAerodrome(this.missionForm.alternateIcao) : null;
+
+      // Dynamically generate smooth flight waypoints along the active route
+      const steps = 10;
+      const defaultFlightPoints: number[][] = [];
+      const dLat = (dest.lat - dep.lat) * 60;
+      const dLng = (dest.lng - dep.lng) * 60 * Math.cos(((dep.lat + dest.lat) / 2) * (Math.PI / 180));
+      const totalDistNm = Math.max(5, Math.round(Math.sqrt(dLat * dLat + dLng * dLng)));
+
+      // Calculate bearing/track
+      const y = Math.sin((dest.lng - dep.lng) * Math.PI / 180) * Math.cos(dest.lat * Math.PI / 180);
+      const x = Math.cos(dep.lat * Math.PI / 180) * Math.sin(dest.lat * Math.PI / 180) -
+                Math.sin(dep.lat * Math.PI / 180) * Math.cos(dest.lat * Math.PI / 180) * Math.cos((dest.lng - dep.lng) * Math.PI / 180);
+      const trk = Math.round((Math.atan2(y, x) * 180 / Math.PI + 360) % 360);
+
+      for (let s = 0; s <= steps; s++) {
+        const fraction = s / steps;
+        const pLat = dep.lat + (dest.lat - dep.lat) * fraction;
+        const pLng = dep.lng + (dest.lng - dep.lng) * fraction;
+        const remainingNm = Math.round(totalDistNm * (1 - fraction));
+        const eteMin = Math.round((remainingNm / 105) * 60);
+        const altFt = s === 0 ? dep.elevationFt : (s === steps ? dest.elevationFt : Math.max(3500, dep.elevationFt + 2500));
+        defaultFlightPoints.push([pLat, pLng, trk, altFt, remainingNm, eteMin]);
+      }
 
       this.simIntervalId = setInterval(() => {
-        let current: [number, number, number, number, number, number];
-
         if (!this.isDiverting) {
           if (this.simProgressIndex < defaultFlightPoints.length - 1) {
             this.simProgressIndex++;
           } else {
             this.simProgressIndex = 0;
           }
-          current = defaultFlightPoints[this.simProgressIndex];
-        } else {
-          // Tactical Divert in progress: step coordinates toward KBVI (40.7725, -80.3914)
-          const targetLat = 40.7725;
-          const targetLng = -80.3914;
-          const currentPos = this.aircraftMarker ? this.aircraftMarker.getLatLng() : { lat: 40.6400, lng: -79.8800 };
-
-          const nextLat = currentPos.lat + (targetLat - currentPos.lat) * 0.25;
-          const nextLng = currentPos.lng + (targetLng - currentPos.lng) * 0.25;
-
-          // Estimate distance remaining to KBVI in NM (approx 60nm per degree)
-          const dLat = (targetLat - nextLat) * 60;
-          const dLng = (targetLng - nextLng) * 45;
-          const distNm = Math.max(0, Math.round(Math.sqrt(dLat * dLat + dLng * dLng) * 10) / 10);
-          const eteMin = Math.round((distNm / (this.simTelemetry.groundSpeedKts || 105)) * 60);
-
-          current = [nextLat, nextLng, 275, 2600, distNm, eteMin];
-        }
-
-        const newCoords: [number, number] = [current[0], current[1]];
-        const wcaData = this.calculateWindCorrection(current[2], this.simTelemetry.groundSpeedKts || 105);
-        this.simTelemetry.headingDeg = wcaData.headingDeg;
-        this.simTelemetry.altitudeFt = current[3];
-        this.simTelemetry.distRemainingNm = current[4];
-        this.simTelemetry.eteMin = current[5];
-
-        // Touchdown & Mission Completion Trigger
-        if (this.simTelemetry.distRemainingNm <= 0.1) {
-          clearInterval(this.simIntervalId);
-          this.isSimTracking = false;
-          this.activeAirspaceAlert = null;
-          this.showApproachCommsDrawer = false;
-
-          const arrivalIcao = this.isDiverting ? (this.missionForm.alternateIcao || 'KBVI') : (this.missionForm.destinationIcao || 'KAGC');
-          this.speakAlert(`Touchdown confirmed at ${arrivalIcao}. Welcome to the ramp. Mission complete.`);
-          
-          this.completeMissionFlight(arrivalIcao);
-        }
-
-        // Airspace Proximity Detection
-        if (this.isDiverting) {
-          if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
-            const alertMsg = 'ADVISORY: Approaching KBVI CTAF 123.00 &bull; Monitor Pattern & Winds';
-            if (this.activeAirspaceAlert !== alertMsg) {
-              this.activeAirspaceAlert = alertMsg;
-              this.speakAlert('Approaching Beaver County airspace. Monitor CTAF on 123 point 0.');
-            }
-          } else {
-            this.activeAirspaceAlert = null;
-          }
-        } else {
-          if (this.simTelemetry.distRemainingNm <= 8 && this.simTelemetry.distRemainingNm > 0) {
-            const alertMsg = 'ALERT: Entering KAGC Class D Airspace &bull; Contact Tower on 121.10';
-            if (this.activeAirspaceAlert !== alertMsg) {
-              this.activeAirspaceAlert = alertMsg;
-              this.speakAlert('Entering Allegheny Class D airspace. Contact Tower on 121 point 1.');
-            }
-          } else {
-            this.activeAirspaceAlert = null;
-          }
-        }
-
-        if (this.aircraftMarker && this.cockpitNavMap) {
-          this.aircraftMarker.setLatLng(newCoords);
-          const iconEl = this.aircraftMarker.getElement();
-          if (iconEl) {
-            const inner = iconEl.querySelector('div');
-            if (inner) inner.style.transform = `rotate(${this.simTelemetry.headingDeg}deg)`;
-          }
-          // Follow Cam Auto-Centering
-          if (this.isFollowCamActive && this.cockpitNavMap) {
-            this.cockpitNavMap.panTo(newCoords, { animate: true, duration: 1 });
-          }
-          if (this.isDiverting && this.activeDiversionVector) {
-            const kbviCoords: [number, number] = [40.7725, -80.3914];
-            this.activeDiversionVector.setLatLngs([newCoords, kbviCoords]);
-          }
+          const current = defaultFlightPoints[this.simProgressIndex];
+          this.updateSimPosition(current, dest.icao);
+        } else if (alt) {
+          // Tactical divert in progress toward chosen alternate
+          const currentPos = this.aircraftMarker ? this.aircraftMarker.getLatLng() : { lat: dep.lat, lng: dep.lng };
+          const nextLat = currentPos.lat + (alt.lat - currentPos.lat) * 0.25;
+          const nextLng = currentPos.lng + (alt.lng - currentPos.lng) * 0.25;
+          const distNm = Math.round(Math.hypot((alt.lat - nextLat) * 60, (alt.lng - nextLng) * 45));
+          const eteMin = Math.round((distNm / 105) * 60);
+          this.updateSimPosition([nextLat, nextLng, 275, 2600, distNm, eteMin], alt.icao);
         }
       }, 3000);
     } else {
       clearInterval(this.simIntervalId);
     }
+  }
+
+  private updateSimPosition(current: number[], targetIcao: string): void {
+    const newCoords: [number, number] = [current[0], current[1]];
+    const heading = current[2];
+
+    this.simTelemetry.headingDeg = heading;
+    this.simTelemetry.altitudeFt = current[3];
+    this.simTelemetry.distRemainingNm = current[4];
+    this.simTelemetry.eteMin = current[5];
+
+    if (this.simTelemetry.distRemainingNm <= 0.5) {
+      clearInterval(this.simIntervalId);
+      this.isSimTracking = false;
+      this.activeAirspaceAlert = null;
+      this.speakAlert(`Touchdown confirmed at ${targetIcao}. Welcome to the ramp.`);
+      this.completeMissionFlight(targetIcao);
+      return;
+    }
+
+    const destIcao = this.missionForm?.destinationIcao || 'KAKR';
+    const activeTarget = (targetIcao && targetIcao.trim().length > 0) ? targetIcao : destIcao;
+
+    if (this.simTelemetry.distRemainingNm <= 10 && this.simTelemetry.distRemainingNm > 0.5) {
+      const alertMsg = `ADVISORY: Approaching ${activeTarget} Airspace (${this.simTelemetry.distRemainingNm} NM). Monitor CTAF / Tower.`;
+      if (!this.activeAirspaceAlert) {
+        this.activeAirspaceAlert = alertMsg;
+        (this as any).showApproachCommsDrawer = true;
+        this.speakAlert(`Approaching ${activeTarget} airspace, ten miles out. Contact tower.`);
+      }
+    } else if (this.simTelemetry.distRemainingNm <= 0.5) {
+      this.activeAirspaceAlert = null;
+    }
+
+    if (this.aircraftMarker && this.cockpitNavMap) {
+      this.aircraftMarker.setLatLng(newCoords);
+      const iconEl = this.aircraftMarker.getElement();
+      if (iconEl) {
+        const inner = iconEl.querySelector('div');
+        if (inner) inner.style.transform = `rotate(${heading}deg)`;
+      }
+      if (this.isFollowCamActive) {
+        this.cockpitNavMap.panTo(newCoords, { animate: true, duration: 1 });
+      }
+    }
+  }
+
+  get activeApproachBriefing() {
+    const isDiv = !!(this as any).isDiverting;
+    const targetIcao = isDiv
+      ? (this.missionForm?.alternateIcao || 'KBVI')
+      : (this.missionForm?.destinationIcao || 'KAKR');
+
+    const aerodrome: any = this.airportService.getAerodrome(targetIcao);
+    const facilityName = aerodrome?.name || targetIcao;
+    const tail = this.missionForm?.tailNumber || 'Skyhawk 734SP';
+    const isTowered = aerodrome?.towered ?? (targetIcao === 'KAKR' || targetIcao === 'KBTP');
+    const airspaceClass = isTowered ? 'Class D' : 'Class G / CTAF';
+    const facilityTitle = isTowered ? `${facilityName} Tower` : `${facilityName} Traffic`;
+
+    const script = isTowered
+      ? `"${facilityTitle}, ${tail}, 10 miles out, inbound for full stop landing with Information [Current ATIS]."`
+      : `"${facilityTitle}, ${tail}, 10 miles out, inbound for full stop landing, ${facilityName}."`;
+
+    const title = `${targetIcao} ${airspaceClass.toUpperCase()} ENTRY CALL`;
+
+    return {
+      title,
+      script,
+      targetIcao,
+      facilityName: facilityName.toLowerCase(),
+      isTowered
+    };
   }
 
   toggleApproachComms(): void {
@@ -393,11 +406,12 @@ export class AppComponent implements OnInit {
       const transcript = event.results[0][0].transcript.toLowerCase();
       this.isRadioTransmitting = false;
 
-      // Class D expects 'allegheny' or 'skyhawk' / '734sp'
-      // KBVI CTAF expects 'beaver' or 'traffic'
-      const matched = this.isDiverting
-        ? transcript.includes('beaver') || transcript.includes('traffic')
-        : transcript.includes('allegheny') || transcript.includes('skyhawk') || transcript.includes('tower');
+     const brief = this.activeApproachBriefing;
+        const targetWord = brief.targetIcao.toLowerCase().replace('k', '');
+        const matched = transcript.includes('skyhawk') || 
+                        transcript.includes('734sp') || 
+                        transcript.includes(targetWord) || 
+                        (brief.isTowered ? transcript.includes('tower') : transcript.includes('traffic'));
 
       this.radioReadbackSuccess = matched;
 
@@ -535,43 +549,141 @@ export class AppComponent implements OnInit {
     }
   }
   updateAirportVisuals(icao: string): void {
-    const code = (icao || '').toUpperCase().trim();
-    if (code === 'KBTP') {
-      this.selectedRunwayLength = 4001;
-      if (this.briefingMap) {
-        this.briefingMap.setView([40.7767, -79.9494], 14);
+    if (!icao || icao.trim().length < 3) return;
+
+    const code = icao.trim().toUpperCase();
+    const aero = this.airportService.getAerodrome(code);
+
+    this.selectedRunwayLength = aero.runwayLengthFt;
+
+    if (this.briefingMap) {
+      // Re-center directly on selected field
+      this.briefingMap.setView([aero.lat, aero.lng], 14);
+
+      // Clean out previous layers
+      if ((this as any).briefingOverlayGroup) {
+        (this as any).briefingOverlayGroup.clearLayers();
+      } else {
+        (this as any).briefingOverlayGroup = (L as any).layerGroup().addTo(this.briefingMap);
       }
-    } else if (code === 'KAGC') {
-      this.selectedRunwayLength = 6501;
-      if (this.briefingMap) {
-        this.briefingMap.setView([40.3544, -79.9298], 14);
-      }
-    } else {
-      this.selectedRunwayLength = 3500;
+
+      // Convert runway feet length to lat/lng offsets based on true compass heading
+      const lengthInNm = aero.runwayLengthFt / 6076.12;
+      const degLatSpan = (lengthInNm / 60);
+      const degLngSpan = (lengthInNm / 60) / Math.max(0.1, Math.cos((aero.lat * Math.PI) / 180));
+
+      const headingRad = (aero.runwayHeadingDeg * Math.PI) / 180;
+      const dLat = (degLatSpan / 2) * Math.cos(headingRad);
+      const dLng = (degLngSpan / 2) * Math.sin(headingRad);
+
+      const rwyCoords: [number, number][] = [
+        [aero.lat - dLat, aero.lng - dLng],
+        [aero.lat + dLat, aero.lng + dLng]
+      ];
+
+      const rwyNum = Math.max(1, Math.round(aero.runwayHeadingDeg / 10)).toString().padStart(2, '0');
+      const recipNum = Math.max(1, Math.round(((aero.runwayHeadingDeg + 180) % 360) / 10)).toString().padStart(2, '0');
+
+      // 1. Draw bold primary runway centerline
+      (L as any).polyline(rwyCoords, {
+        color: '#38bdf8',
+        weight: 6,
+        opacity: 0.95
+      }).addTo((this as any).briefingOverlayGroup)
+        .bindTooltip(`RWY ${rwyNum}/${recipNum} (${aero.runwayLengthFt.toLocaleString()} ft)`, {
+          permanent: true,
+          direction: 'top'
+        });
+
+      // 2. Draw traffic pattern box oriented to runway
+      const patternBox = this.airportService.calculateTrafficPattern(aero.lat, aero.lng, aero.runwayHeadingDeg);
+      (L as any).polygon(patternBox, {
+        color: '#0ea5e9',
+        dashArray: '6, 6',
+        weight: 2,
+        fillColor: '#0ea5e9',
+        fillOpacity: 0.12
+      }).addTo((this as any).briefingOverlayGroup)
+        .bindTooltip(`Standard Left Traffic (${(aero.elevationFt + 1000).toLocaleString()} ft MSL)`, {
+          direction: 'center'
+        });
+
+      // Settle layout
+      setTimeout(() => {
+        this.briefingMap?.invalidateSize();
+      }, 50);
     }
   }
-  radioScripts = [
-    {
-      phase: 'ENGINE START & TAXI',
-      type: 'NON_TOWERED',
-      cue: 'Butler Traffic, Skyhawk 734SP, taxiing from transient parking to Runway 08 via Alpha, Butler.'
-    },
-    {
-      phase: 'ENGINE START & TAXI',
-      type: 'TOWERED',
-      cue: 'Butler Ground, Skyhawk 734SP, ready to taxi Runway 08, with Information Alpha.'
-    },
-    {
-      phase: 'RUNWAY DEPARTURE',
-      type: 'NON_TOWERED',
-      cue: 'Butler Traffic, Skyhawk 734SP, departing Runway 08, remaining in the pattern, Butler.'
-    },
-    {
-      phase: 'RUNWAY DEPARTURE',
-      type: 'TOWERED',
-      cue: 'Butler Tower, Skyhawk 734SP, holding short Runway 08, ready for departure.'
+
+  radioScripts: Array<{ phase: string; type: string; cue: string }> = [];
+
+  generateDynamicRadioScripts(): void {
+    const depIcao = this.missionForm.departureIcao || 'KBTP';
+    const dep = this.airportService.getAerodrome(depIcao);
+    const tail = this.missionForm.tailNumber || 'Skyhawk 734SP';
+    const isPattern = this.missionForm.flightType === 'PATTERN';
+    const destIcao = this.missionForm.destinationIcao || depIcao;
+    const dest = this.airportService.getAerodrome(destIcao);
+
+    const rwyNum = Math.max(1, Math.round(dep.runwayHeadingDeg / 10)).toString().padStart(2, '0');
+
+    this.radioScripts = [
+      {
+        phase: 'ENGINE START & TAXI',
+        type: 'DEPARTURE',
+        cue: `${dep.name} Ground / Traffic, ${tail}, at transient parking, taxiing to Runway ${rwyNum} with Information Alpha.`
+      },
+      {
+        phase: 'RUNWAY DEPARTURE',
+        type: 'DEPARTURE',
+        cue: `${dep.name} Tower / Traffic, ${tail}, holding short Runway ${rwyNum}, ready for departure.`
+      }
+    ];
+
+    if (isPattern) {
+      this.radioScripts.push(
+        {
+          phase: 'PATTERN DOWNWIND',
+          type: 'PATTERN',
+          cue: `${dep.name} Traffic, ${tail}, midfield left downwind Runway ${rwyNum}.`
+        },
+        {
+          phase: 'FINAL APPROACH',
+          type: 'PATTERN',
+          cue: `${dep.name} Traffic, ${tail}, turning final Runway ${rwyNum}, touch and go.`
+        }
+      );
+    } else {
+      const destRwy = Math.max(1, Math.round(dest.runwayHeadingDeg / 10)).toString().padStart(2, '0');
+      this.radioScripts.push(
+        {
+          phase: 'EN-ROUTE CRUISE',
+          type: 'EN-ROUTE',
+          cue: `Cleveland Center, ${tail}, level at 4,500 en-route to ${dest.icao}, VFR flight following.`
+        },
+        {
+          phase: 'INBOUND (10 NM OUT)',
+          type: 'DESTINATION',
+          cue: `${dest.name} Tower / Traffic, ${tail}, 10 miles outbound, inbound for full-stop landing with Information Bravo.`
+        },
+        {
+          phase: 'PATTERN ENTRY',
+          type: 'DESTINATION',
+          cue: `${dest.name} Traffic, ${tail}, entering 45-degree midfield left downwind Runway ${destRwy}.`
+        },
+        {
+          phase: 'FINAL CLEARANCE',
+          type: 'DESTINATION',
+          cue: `${dest.name} Tower / Traffic, ${tail}, turning 2-mile final Runway ${destRwy}, gear down and locked.`
+        },
+        {
+          phase: 'CLEAR OF ACTIVE',
+          type: 'DESTINATION',
+          cue: `${dest.name} Ground / Traffic, ${tail}, clear of active runway, taxiing to ramp.`
+        }
+      );
     }
-  ];
+  }
 
   constructor(
     private checklistService: ChecklistService,
@@ -582,6 +694,7 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.airportService.initDatabase().subscribe();
     this.initSpeechEngine();
     const savedLogs = localStorage.getItem('flyright_flight_logs');
     if (savedLogs) {
@@ -593,18 +706,19 @@ export class AppComponent implements OnInit {
     }
     const savedPilot = localStorage.getItem('flyright_pilot');
     if (savedPilot) {
-      try{
+      try {
         this.currentPilot = JSON.parse(savedPilot);
-        this.showMissionModal = true;
-        setTimeout(() => {
-          this.initBriefingMap();
-        }, 300);
+        this.airportService.initDatabase().subscribe(() => {
+          this.showMissionModal = true;
+          setTimeout(() => {
+            this.initBriefingMap();
+          }, 250);
+        });
       } catch (e) {
         localStorage.removeItem('flyright_pilot');
         this.showAuthModal = true;
       }
-    }
-    else {
+    } else {
       this.showAuthModal = true;
     }
   }
@@ -915,73 +1029,80 @@ export class AppComponent implements OnInit {
   }
 
   onPilotAuthenticated(authData: { pilotName: string; email: string }): void {
-    const pilotId = Date.now();
     this.currentPilot = {
-      id: pilotId,
       name: authData.pilotName,
       email: authData.email
     } as any;
 
-    localStorage.setItem('flyright_pilot', JSON.stringify(this.currentPilot));
-    (this.missionForm as any).pilot = this.currentPilot;
-    this.showAuthModal = false;
-    this.showMissionModal = true;
-    this.cdr.detectChanges();
+    try {
+      localStorage.setItem('flyright_pilot', JSON.stringify(this.currentPilot));
+    } catch (e) {
+      console.warn('Could not cache pilot session', e);
+    }
 
-    const triggerMapRender = () => {
-      const depIcao = (this.missionForm as any)?.departureIcao || 'KBTP';
-      if ((this as any).initBriefingMap) {
-        (this as any).initBriefingMap();
-      }
-      if ((this as any).updateAirportVisuals) {
-        (this as any).updateAirportVisuals(depIcao);
-      }
-      if ((this as any).briefingMap) {
-        (this as any).briefingMap.invalidateSize();
-      }
-    };
+    // Wait until 20,412 aerodromes are in memory before displaying modal
+    this.airportService.initDatabase().subscribe(() => {
+      (this as any).showAuthModal = false;
+      (this as any).showMissionModal = true;
+      if ('showOnboardingModal' in this) (this as any).showOnboardingModal = true;
 
-    setTimeout(triggerMapRender, 150);
-    setTimeout(triggerMapRender, 450);
+      setTimeout(() => {
+        this.initBriefingMap();
+      }, 300);
+    });
   }
   confirmMission(): void {
     if (!this.currentPilot) return;
     this.missionForm.pilot = this.currentPilot;
 
     const selectedCode = this.missionForm.aircraftModelCode || 'C172S';
-    if (this.aircraftSpeeds[selectedCode]) {
-      this.currentVspeeds = { ...this.aircraftSpeeds[selectedCode] };
+    if ((this as any).aircraftSpeeds && (this as any).aircraftSpeeds[selectedCode]) {
+      (this as any).currentVspeeds = { ...(this as any).aircraftSpeeds[selectedCode] };
     }
 
-    this.pilotService.createMission(this.missionForm).subscribe({
-      next: () => {
-        this.showMissionModal = false;
-        this.showFlightLoading = true;
+    // 1. Generate real ATC scripts matching active departure and destination
+    this.generateDynamicRadioScripts();
 
-        setTimeout(() => {
-          this.showFlightLoading = false;
-          this.onBoardingCompleted = true;
-          this.cdr.detectChanges();
-        }, 4200);
+    // 2. Refresh cockpit nav map & aircraft marker to start runway
+    if (this.cockpitNavMap) {
+      this.initAircraftMarker();
+    }
 
-        this.loadChecklist(this.missionForm.aircraftModelCode);
-        this.fetchWeatherBriefing(this.missionForm.departureIcao);
-      },
-      error: (err: any) => {
-        console.error('Mission creation failed', err);
-        this.showMissionModal = false;
-        this.showFlightLoading = true;
+    // 3. Cache mission locally so app never depends on backend connectivity
+    try {
+      localStorage.setItem('flyright_active_mission', JSON.stringify(this.missionForm));
+    } catch (e) {
+      console.warn('Could not cache mission locally', e);
+    }
 
-        setTimeout(() => {
-          this.showFlightLoading = false;
-          this.onBoardingCompleted = true;
-          this.cdr.detectChanges();
-        }, 4200);
+    // 4. Transition UI to loading screen
+    this.showMissionModal = false;
+    this.showFlightLoading = true;
 
-        this.loadChecklist(this.missionForm.aircraftModelCode);
-      }
-    });
+    setTimeout(() => {
+      this.showFlightLoading = false;
+      (this as any).onboardingCompleted = true;
+      if ('isOnboardingComplete' in this) (this as any).isOnboardingComplete = true;
+
+      this.cdr.detectChanges();
+    }, 4200);
+
+    this.loadChecklist(this.missionForm.aircraftModelCode);
+    this.fetchWeatherBriefing(this.missionForm.departureIcao);
+
+    // 5. Offline-first safe mission persistence
+    try {
+      this.pilotService.createMission(this.missionForm).subscribe({
+        next: () => console.log('[FlyRight] Mission synced successfully.'),
+        error: () => {
+          console.warn('[FlyRight] Offline mode active: local mission cached.');
+        }
+      });
+    } catch (e) {
+      // Prevent unhandled exception
+    }
   }
+
 
   loadChecklist(modelCode: string): void {
     this.isLoading = true;
@@ -1161,75 +1282,169 @@ export class AppComponent implements OnInit {
     // Master Radio Phraseology Repository
     // Dynamic Master Radio Repository
   get allRadioCalls() {
-    const icao = this.missionForm?.departureIcao || 'KBTP';
-    const tail = this.missionForm?.tailNumber || 'N734SP';
+    const depIcao = this.missionForm?.departureIcao || 'KBTP';
+    const dep = this.airportService.getAerodrome(depIcao);
+    const tail = this.missionForm?.tailNumber || 'Skyhawk 734SP';
+    const isPattern = this.missionForm?.flightType === 'PATTERN';
+    const destIcao = this.missionForm?.destinationIcao || depIcao;
+    const dest = this.airportService.getAerodrome(destIcao);
+    const altIcao = this.missionForm?.alternateIcao || 'KBVI';
+    const alt = this.airportService.getAerodrome(altIcao);
 
-    return [
-      // Non-Towered / CTAF
-      {
-        situation: 'CTAF Taxi Out',
-        frequency: '122.80 MHz (CTAF)',
-        airspaceType: 'NON_TOWERED',
-        pilotTransmission: () =>
-          `${icao} Traffic, Skyhawk ${tail}, taxiing to Runway 08 via Alpha, ${icao} Traffic.`,
-        atcResponse: '(No ATC - Listen for inbound & taxiing traffic)',
-        readback: 'Maintain visual scan and announce crossing runways.'
-      },
-      {
-        situation: 'CTAF Departure / Takeoff',
-        frequency: '122.80 MHz (CTAF)',
-        airspaceType: 'NON_TOWERED',
-        pilotTransmission: () =>
-          `${icao} Traffic, Skyhawk ${tail}, departing Runway 08, remaining in the closed pattern, ${icao}.`,
-        atcResponse: '(Self-Announce Traffic Broadcast)',
-        readback: 'Broadcast crosswind, downwind, base, and final turns.'
-      },
-      {
-        situation: 'CTAF Pattern Downwind',
-        frequency: '122.80 MHz (CTAF)',
-        airspaceType: 'NON_TOWERED',
-        pilotTransmission: () =>
-          `${icao} Traffic, Skyhawk ${tail}, midfield left downwind Runway 08, touch and go, ${icao}.`,
-        atcResponse: '(Self-Announce Traffic Broadcast)',
-        readback: 'Report turning final with aircraft intentions.'
-      },
+    const depRwy = Math.max(1, Math.round(dep.runwayHeadingDeg / 10)).toString().padStart(2, '0');
+    const destRwy = Math.max(1, Math.round(dest.runwayHeadingDeg / 10)).toString().padStart(2, '0');
+    const altRwy = Math.max(1, Math.round(alt.runwayHeadingDeg / 10)).toString().padStart(2, '0');
 
-      // Towered / Class D/C/B Airspace
-      {
-        situation: 'Ground Taxi Clearance',
-        frequency: '121.90 MHz (Ground)',
-        airspaceType: 'TOWERED',
-        pilotTransmission: () =>
-          `${icao} Ground, Skyhawk ${tail}, at transient ramp with Information Bravo, ready to taxi, VFR pattern.`,
-        atcResponse: `Skyhawk ${tail}, ${icao} Ground, taxi to Runway 08 via Taxiway Alpha, hold short Runway 08.`,
-        readback: `Taxi to Runway 08 via Alpha, hold short Runway 08, Skyhawk ${tail}.`
-      },
-      {
-        situation: 'Tower Takeoff Clearance',
-        frequency: '118.50 MHz (Tower)',
-        airspaceType: 'TOWERED',
-        pilotTransmission: () =>
-          `${icao} Tower, Skyhawk ${tail}, holding short Runway 08, ready for takeoff.`,
-        atcResponse: `Skyhawk ${tail}, wind 090 at 7, Runway 08 cleared for takeoff, make left closed traffic.`,
-        readback: `Cleared for takeoff Runway 08, left closed traffic, Skyhawk ${tail}.`
-      },
-      {
-        situation: 'Tower Inbound / Pattern Call',
-        frequency: '118.50 MHz (Tower)',
-        airspaceType: 'TOWERED',
-        pilotTransmission: () =>
-          `${icao} Tower, Skyhawk ${tail}, left downwind Runway 08.`,
-        atcResponse: `Skyhawk ${tail}, number 2 following a Cherokee on 1-mile final, cleared touch and go Runway 08.`,
-        readback: `Number 2, traffic in sight, cleared touch and go Runway 08, Skyhawk ${tail}.`
+    const depTowered = !!this.missionForm?.departureTowered;
+    const destTowered = !!this.missionForm?.destinationTowered;
+
+    const calls: any[] = [];
+
+    // --- 1. DEPARTURE CALLS ---
+    if (depTowered) {
+      calls.push(
+        {
+          situation: 'Ground Taxi Clearance',
+          frequency: '121.90 MHz (Ground)',
+          airspaceType: 'TOWERED',
+          category: 'DEPARTURE',
+          pilotTransmission: () => `${dep.name} Ground, ${tail}, at transient ramp with Information Alpha, ready to taxi, VFR departure Runway ${depRwy}.`,
+          atcResponse: `${tail}, ${dep.name} Ground, taxi to Runway ${depRwy} via Alpha, hold short Runway ${depRwy}.`,
+          readback: `Taxi to Runway ${depRwy} via Alpha, hold short Runway ${depRwy}, ${tail}.`
+        },
+        {
+          situation: 'Tower Takeoff Clearance',
+          frequency: '128.50 MHz (Tower)',
+          airspaceType: 'TOWERED',
+          category: 'DEPARTURE',
+          pilotTransmission: () => `${dep.name} Tower, ${tail}, holding short Runway ${depRwy}, ready for departure.`,
+          atcResponse: `${tail}, wind calm, Runway ${depRwy} cleared for takeoff, fly runway heading.`,
+          readback: `Runway ${depRwy} cleared for takeoff, ${tail}.`
+        }
+      );
+    } else {
+      calls.push(
+        {
+          situation: 'CTAF Taxi Out',
+          frequency: '122.80 MHz (CTAF)',
+          airspaceType: 'NON_TOWERED',
+          category: 'DEPARTURE',
+          pilotTransmission: () => `${dep.name} Traffic, ${tail}, taxiing to Runway ${depRwy} via Alpha, ${dep.name} Traffic.`,
+          atcResponse: '(No ATC - Self-announce intentions & monitor CTAF)',
+          readback: 'Maintain visual scan and announce crossing runways.'
+        },
+        {
+          situation: 'CTAF Departure / Takeoff',
+          frequency: '122.80 MHz (CTAF)',
+          airspaceType: 'NON_TOWERED',
+          category: 'DEPARTURE',
+          pilotTransmission: () => `${dep.name} Traffic, ${tail}, departing Runway ${depRwy}${isPattern ? ', remaining in closed pattern' : ', departing to the northwest'}, ${dep.name}.`,
+          atcResponse: '(Self-Announce Traffic Broadcast)',
+          readback: 'Broadcast crosswind, downwind, base, and final turns.'
+        }
+      );
+    }
+
+    // --- 2. LOCAL PATTERN OR CROSS COUNTRY ---
+    if (isPattern) {
+      if (depTowered) {
+        calls.push({
+          situation: 'Tower Inbound / Pattern Call',
+          frequency: '128.50 MHz (Tower)',
+          airspaceType: 'TOWERED',
+          category: 'PATTERN',
+          pilotTransmission: () => `${dep.name} Tower, ${tail}, left downwind Runway ${depRwy}.`,
+          atcResponse: `${tail}, number 2 following a Cherokee on 1-mile final, cleared touch and go Runway ${depRwy}.`,
+          readback: `Number 2, cleared touch and go Runway ${depRwy}, ${tail}.`
+        });
+      } else {
+        calls.push({
+          situation: 'CTAF Pattern Downwind',
+          frequency: '122.80 MHz (CTAF)',
+          airspaceType: 'NON_TOWERED',
+          category: 'PATTERN',
+          pilotTransmission: () => `${dep.name} Traffic, ${tail}, midfield left downwind Runway ${depRwy}, touch and go, ${dep.name}.`,
+          atcResponse: '(Self-Announce Traffic Broadcast)',
+          readback: 'Report turning final with aircraft intentions.'
+        });
       }
-    ];
+    } else {
+      // Cross-Country En-Route Cruise
+      calls.push({
+        situation: 'En-Route VFR Flight Following',
+        frequency: '124.75 MHz (Center / Approach)',
+        airspaceType: 'ENROUTE',
+        category: 'CRUISE',
+        pilotTransmission: () => `Cleveland Center, ${tail}, 15 miles northwest of ${dep.icao}, level 4,500, request VFR flight following to ${dest.icao}.`,
+        atcResponse: `${tail}, squawk 4321 and ident. Altimeter 30.12, radar contact.`,
+        readback: `Squawk 4321, ${tail}.`
+      });
+
+      // Destination Inbound
+      if (destTowered) {
+        calls.push(
+          {
+            situation: `Inbound Call (10 NM Out to ${dest.icao})`,
+            frequency: '120.10 MHz (Tower)',
+            airspaceType: 'DESTINATION',
+            category: 'DESTINATION',
+            pilotTransmission: () => `${dest.name} Tower, ${tail}, 10 miles southeast at 3,500 with Information Bravo, inbound for full stop landing.`,
+            atcResponse: `${tail}, ${dest.name} Tower, enter midfield left downwind Runway ${destRwy}. Report 2-mile final.`,
+            readback: `Enter midfield left downwind Runway ${destRwy}, report 2-mile final, ${tail}.`
+          },
+          {
+            situation: 'Tower Final Clearance',
+            frequency: '120.10 MHz (Tower)',
+            airspaceType: 'DESTINATION',
+            category: 'DESTINATION',
+            pilotTransmission: () => `${dest.name} Tower, ${tail}, 2-mile final Runway ${destRwy}, gear down.`,
+            atcResponse: `${tail}, wind calm, Runway ${destRwy} cleared to land.`,
+            readback: `Cleared to land Runway ${destRwy}, ${tail}.`
+          }
+        );
+      } else {
+        calls.push(
+          {
+            situation: `CTAF Inbound (10 NM Out to ${dest.icao})`,
+            frequency: '122.80 MHz (CTAF)',
+            airspaceType: 'DESTINATION',
+            category: 'DESTINATION',
+            pilotTransmission: () => `${dest.name} Traffic, ${tail}, 10 miles southeast, 3,500 descending, inbound for landing Runway ${destRwy}, ${dest.name}.`,
+            atcResponse: '(Self-Announce Traffic Broadcast - Listen for active pattern traffic)',
+            readback: 'Maintain visual separation and announce 45-degree pattern entry.'
+          },
+          {
+            situation: 'CTAF Final Approach',
+            frequency: '122.80 MHz (CTAF)',
+            airspaceType: 'DESTINATION',
+            category: 'DESTINATION',
+            pilotTransmission: () => `${dest.name} Traffic, ${tail}, turning final Runway ${destRwy}, full stop, ${dest.name}.`,
+            atcResponse: '(Self-Announce Traffic Broadcast)',
+            readback: 'Announce clear of active runway once off centerline.'
+          }
+        );
+      }
+
+      // Standby Tactical Diversion (Emergency / Alternate)
+      calls.push({
+        situation: `Tactical Diversion Standby (${alt.icao})`,
+        frequency: '123.00 MHz (CTAF / Tower)',
+        airspaceType: 'DIVERT',
+        category: 'DIVERT',
+        pilotTransmission: () => `${alt.name} Traffic, ${tail}, diverting inbound due to weather/precautionary, 8 miles out, descending for Runway ${altRwy}, ${alt.name}.`,
+        atcResponse: '(Monitor CTAF/Tower frequency & announce visual intentions)',
+        readback: 'Broadcast position, altitude, and intent on active frequency.'
+      });
+    }
+
+    return calls;
   }
 
-  // Dynamic filter based on dispatched airspace
   get activeRadioCalls() {
-    const targetType = this.missionForm?.departureTowered ? 'TOWERED' : 'NON_TOWERED';
-    return this.allRadioCalls.filter(call => call.airspaceType === targetType);
+    // Return all applicable phase calls for the mission flight type
+    return this.allRadioCalls;
   }
+
 
    toggleRadioDrawer(): void {
     this.showRadioDrawer = !this.showRadioDrawer;
@@ -1240,13 +1455,13 @@ export class AppComponent implements OnInit {
   }
 
   get currentPhaseProgress(): number {
-    if (!this.checklists || this.checklists.length ===0) return 0;
+    if (!this.checklists || this.checklists.length === 0) return 10;
     const current = this.checklists[this.activeChecklistIndex];
-    if (!current?.items || current.items.length === 0) return 0;
+    if (!current?.items || current.items.length === 0) return 10;
 
-    const completed = current.items.filter(item => item.isCompleted).length;
-    const itemPercentage = (completed / current.items.length) * (100 - (this.onBoardingCompleted ? this.ONBOARDING_WEIGHT : 0));
-    const baseBoost = this.onBoardingCompleted ? this.ONBOARDING_WEIGHT : 0;
+    const completed = current.items.filter((item: any) => item.isCompleted).length;
+    const baseBoost = 10;
+    const itemPercentage = (completed / current.items.length) * 90;
 
     return Math.round(baseBoost + itemPercentage);
   }
