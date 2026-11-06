@@ -36,6 +36,12 @@
         <button type="button" class="view-pill-btn" [class.active]="activeCockpitView === 'NAV_MAP'" (click)="switchCockpitView('NAV_MAP')">
           Live Nav Map
         </button>
+        <button type="button"
+          (click)="switchCockpitView('FLASHCARDS')"
+          [style.background]="activeCockpitView === 'FLASHCARDS' ? '#0284c7' : 'rgba(15, 23, 42, 0.7)'"
+          style="color: #ffffff; border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 14px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;">
+          Ground School
+        </button>
       </div>
       <button type="button" class="ctrl-btn" (click)="toggleAudio()">
         {{ isAudioMuted ? 'Audio Off' : 'Audio On' }}
@@ -312,6 +318,82 @@
         </div>
       </div>
     <div id="cockpitNavMap" class="cockpit-nav-canvas"></div>
+  </div>
+
+  <!-- GROUND SCHOOL FLASHCARDS VIEW -->
+  <div *ngIf="activeCockpitView === 'FLASHCARDS'" 
+      style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 20px; color: #f8fafc; font-family: sans-serif; max-width: 680px; margin: 16px auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+    
+    <!-- Header & Progress -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <span style="font-size: 10px; font-weight: 800; color: #38bdf8; letter-spacing: 0.8px; text-transform: uppercase;">FAA Private Pilot Airman Knowledge</span>
+        <h3 style="margin: 2px 0 0 0; font-size: 16px; font-weight: 700;">Daily Ground School Deck</h3>
+      </div>
+      <div *ngIf="dailyDeck && !dailyDeck.completed" style="font-size: 12px; font-weight: 700; color: #94a3b8; background: #1e293b; padding: 4px 10px; border-radius: 6px; border: 1px solid #475569;">
+        Question {{ dailyDeck.currentIndex + 1 }} / {{ dailyDeck.cards.length }}
+      </div>
+    </div>
+
+    <!-- Active Card View -->
+    <ng-container *ngIf="dailyDeck && !dailyDeck.completed">
+      <div style="margin-bottom: 8px;">
+        <span style="font-size: 10px; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+          {{ dailyDeck.cards[dailyDeck.currentIndex].category }}
+        </span>
+      </div>
+
+      <div style="font-size: 15px; font-weight: 600; line-height: 1.4; margin: 12px 0 20px 0; color: #f1f5f9;">
+        {{ dailyDeck.cards[dailyDeck.currentIndex].question }}
+      </div>
+
+      <!-- Multiple Choice Options -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <button *ngFor="let option of dailyDeck.cards[dailyDeck.currentIndex].options; let idx = index"
+                (click)="selectFlashcardAnswer(idx)"
+                [disabled]="showFlashcardExplanation"
+                [style.background]="showFlashcardExplanation 
+                  ? (idx === dailyDeck.cards[dailyDeck.currentIndex].correctIndex ? 'rgba(34, 197, 94, 0.2)' : (selectedFlashcardOption === idx ? 'rgba(239, 68, 68, 0.2)' : 'rgba(30, 41, 59, 0.6)'))
+                  : (selectedFlashcardOption === idx ? '#1e293b' : 'rgba(30, 41, 59, 0.6)')"
+                [style.borderColor]="showFlashcardExplanation
+                  ? (idx === dailyDeck.cards[dailyDeck.currentIndex].correctIndex ? '#22c55e' : (selectedFlashcardOption === idx ? '#ef4444' : '#334155'))
+                  : '#334155'"
+                style="text-align: left; padding: 12px 14px; border-radius: 8px; border-width: 1px; border-style: solid; color: #f8fafc; font-size: 13px; line-height: 1.3; cursor: pointer; transition: all 0.15s ease;">
+          <span style="font-weight: 700; margin-right: 8px; color: #38bdf8;">{{ ['A', 'B', 'C', 'D'][idx] }}.</span> {{ option }}
+        </button>
+      </div>
+
+      <!-- Explanation Box -->
+      <div *ngIf="showFlashcardExplanation" 
+          style="background: rgba(30, 41, 59, 0.9); border-left: 4px solid #38bdf8; padding: 12px 14px; border-radius: 4px; margin-bottom: 20px;">
+        <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px;">
+          {{ selectedFlashcardOption === dailyDeck.cards[dailyDeck.currentIndex].correctIndex ? '✓ Correct' : '✕ Incorrect - FAA Reference' }}
+        </div>
+        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+          {{ dailyDeck.cards[dailyDeck.currentIndex].explanation }} 
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <div *ngIf="showFlashcardExplanation" style="text-align: right;">
+        <button (click)="nextFlashcard()"
+                style="background: #0284c7; color: #ffffff; border: none; padding: 8px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+          {{ dailyDeck.currentIndex === dailyDeck.cards.length - 1 ? 'Finish Session' : 'Next Question →' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Session Summary View -->
+    <div *ngIf="dailyDeck && dailyDeck.completed" style="text-align: center; padding: 24px 10px;">
+      <div style="font-size: 42px; margin-bottom: 8px;">🎯</div>
+      <h4 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700;">Daily Deck Complete</h4>
+      <p style="color: #94a3b8; font-size: 13px; margin: 0 0 18px 0;">You scored {{ dailyDeck.score }} out of {{ dailyDeck.cards.length }} correct ({{ (dailyDeck.score / dailyDeck.cards.length) * 100 }}%)</p>
+      
+      <button (click)="resetDailyCards()"
+              style="background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+        Review Deck Again
+      </button>
+    </div>
   </div>
 
   <!-- 2. PRE-FLIGHT MISSION SETUP MODAL -->

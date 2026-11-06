@@ -9,6 +9,7 @@ import { WeatherService, MetarBriefing } from './services/weather.service';
 import { FlightLoadingComponent } from './components/flight-loading/flight-loading.component';
 import { PilotLoginComponent } from './components/pilot-login/pilot-login.component';
 import { AirportService } from './services/airport.service';
+import { FlashcardService,DailyDeckState,Flashcard } from './services/flashcard.service';
 import { from } from 'rxjs';
 
 import * as L from 'leaflet';
@@ -34,7 +35,7 @@ export class AppComponent implements OnInit {
   synth: SpeechSynthesis | null = null;
   currentMetar: MetarBriefing | null = null;
   isLoadingWeather = false;
-  activeCockpitView: 'CHECKLIST' | 'NAV_MAP' = 'CHECKLIST';
+  activeCockpitView: 'CHECKLIST' | 'NAV_MAP' | 'FLASHCARDS' = 'CHECKLIST';
   showRadioDrawer = false;
   showDebriefModal: boolean = false;
   showLogbookModal: boolean = false;
@@ -65,6 +66,9 @@ export class AppComponent implements OnInit {
   isDiverting: boolean = false;
   activeAirspaceAlert: string | null = null;
   private activeDiversionVector: L.Polyline | null = null;
+  dailyDeck: DailyDeckState | null = null;
+  selectedFlashcardOption: number | null = null;
+  showFlashcardExplanation: boolean = false;
 
   initBriefingMap(): void {
     const mapEl = document.getElementById('briefingMap');
@@ -542,7 +546,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP'): void {
+  switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP' | 'FLASHCARDS'): void {
     this.activeCockpitView = view;
     if (view === 'NAV_MAP') {
       this.initCockpitNavMap();
@@ -685,15 +689,17 @@ export class AppComponent implements OnInit {
     }
   }
 
-  constructor(
+   constructor(
     private checklistService: ChecklistService,
-    private pilotService: PilotService,
-    private airportService: AirportService,
+    public pilotService: PilotService,
+    public airportService: AirportService,
     private weatherService: WeatherService,
-    private cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef,
+    public flashcardService: FlashcardService
   ) {}
 
   ngOnInit(): void {
+    this.dailyDeck = this.flashcardService.getDailySession();
     this.airportService.initDatabase().subscribe();
     this.initSpeechEngine();
     const savedLogs = localStorage.getItem('flyright_flight_logs');
@@ -1592,5 +1598,43 @@ export class AppComponent implements OnInit {
     }
 
     this.speakCue('Aircraft systems and checklists reset.');
+  }
+
+  selectFlashcardAnswer(index: number): void {
+    if (!this.dailyDeck || this.showFlashcardExplanation) return;
+    const current = this.dailyDeck.cards[this.dailyDeck.currentIndex];
+    const isCorrect = index === current.correctIndex;
+
+    this.selectedFlashcardOption = index;
+    this.showFlashcardExplanation = true;
+    this.dailyDeck.answers[current.id] = { selectedIndex: index, isCorrect };
+
+    if (isCorrect) {
+      this.dailyDeck.score++;
+    }
+    this.flashcardService.saveSession(this.dailyDeck);
+  }
+
+  nextFlashcard(): void {
+    if (!this.dailyDeck) return;
+    if (this.dailyDeck.currentIndex < this.dailyDeck.cards.length - 1) {
+      this.dailyDeck.currentIndex++;
+      this.selectedFlashcardOption = null;
+      this.showFlashcardExplanation = false;
+    } else {
+      this.dailyDeck.completed = true;
+    }
+    this.flashcardService.saveSession(this.dailyDeck);
+  }
+
+  resetDailyCards(): void {
+    if (!this.dailyDeck) return;
+    this.dailyDeck.currentIndex = 0;
+    this.dailyDeck.score = 0;
+    this.dailyDeck.answers = {};
+    this.dailyDeck.completed = false;
+    this.selectedFlashcardOption = null;
+    this.showFlashcardExplanation = false;
+    this.flashcardService.saveSession(this.dailyDeck);
   }
 }
