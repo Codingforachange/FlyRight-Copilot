@@ -628,6 +628,27 @@ export class AppComponent implements OnInit {
     const isPattern = this.missionForm.flightType === 'PATTERN';
     const destIcao = this.missionForm.destinationIcao || depIcao;
     const dest = this.airportService.getAerodrome(destIcao);
+    // Resolve dynamic FAA ARTCC based on coordinates across all 50 states
+    let centerFacility = 'Regional Center';
+    if (dep && dep.lng !== undefined && dep.lat !== undefined) {
+      if (dep.lat > 50) {
+        centerFacility = 'Anchorage Center'; // Alaska
+      } else if (dep.lat < 23 && dep.lng < -150) {
+        centerFacility = 'Honolulu Center'; // Hawaii
+      } else if (dep.lng < -115) {
+        centerFacility = (dep.lat > 42) ? 'Seattle Center' : 'Los Angeles Center'; // Pacific NW vs SW
+      } else if (dep.lng < -104) {
+        centerFacility = (dep.lat > 41) ? 'Salt Lake Center' : 'Albuquerque Center'; // Intermountain West
+      } else if (dep.lng < -94) {
+        centerFacility = (dep.lat < 34) ? 'Houston Center' : 'Denver Center'; // Texas Gulf vs High Plains
+      } else if (dep.lng < -84) {
+        centerFacility = (dep.lat < 33) ? 'Houston Center' : 'Kansas City Center'; // Deep South vs Midwest
+      } else if (dep.lng < -77) {
+        centerFacility = (dep.lat < 32) ? 'Jacksonville Center' : 'Cleveland Center'; // FL/GA vs Great Lakes/PA
+      } else {
+        centerFacility = (dep.lat > 38) ? 'Boston Center' : (dep.lat > 36 ? 'New York Center' : 'Washington Center');
+      }
+    }
 
     const rwyNum = Math.max(1, Math.round(dep.runwayHeadingDeg / 10)).toString().padStart(2, '0');
 
@@ -663,7 +684,7 @@ export class AppComponent implements OnInit {
         {
           phase: 'EN-ROUTE CRUISE',
           type: 'EN-ROUTE',
-          cue: `Cleveland Center, ${tail}, level at 4,500 en-route to ${dest.icao}, VFR flight following.`
+          cue: `${centerFacility}, ${tail}, level at 4,500 en-route to ${dest.icao}, VFR flight following.`
         },
         {
           phase: 'INBOUND (10 NM OUT)',
@@ -1376,12 +1397,33 @@ export class AppComponent implements OnInit {
       }
     } else {
       // Cross-Country En-Route Cruise
-      calls.push({
-        situation: 'En-Route VFR Flight Following',
-        frequency: '124.75 MHz (Center / Approach)',
-        airspaceType: 'ENROUTE',
-        category: 'CRUISE',
-        pilotTransmission: () => `Cleveland Center, ${tail}, 15 miles northwest of ${dep.icao}, level 4,500, request VFR flight following to ${dest.icao}.`,
+    let centerFacility = 'Regional Center';
+    if (dep && dep.lng !== undefined && dep.lat !== undefined) {
+      if (dep.lat > 50) {
+        centerFacility = 'Anchorage Center';
+      } else if (dep.lat < 23 && dep.lng < -150) {
+        centerFacility = 'Honolulu Center';
+      } else if (dep.lng < -115) {
+        centerFacility = (dep.lat > 42) ? 'Seattle Center' : 'Los Angeles Center';
+      } else if (dep.lng < -104) {
+        centerFacility = (dep.lat > 41) ? 'Salt Lake Center' : 'Albuquerque Center';
+      } else if (dep.lng < -94) {
+        centerFacility = (dep.lat < 34) ? 'Houston Center' : 'Denver Center';
+      } else if (dep.lng < -84) {
+        centerFacility = (dep.lat < 33) ? 'Houston Center' : 'Kansas City Center';
+      } else if (dep.lng < -77) {
+        centerFacility = (dep.lat < 32) ? 'Jacksonville Center' : 'Cleveland Center';
+      } else {
+        centerFacility = (dep.lat > 38) ? 'Boston Center' : (dep.lat > 36 ? 'New York Center' : 'Washington Center');
+      }
+    }
+
+    calls.push({
+      situation: 'En-Route VFR Flight Following',
+      frequency: '124.75 MHz (Center / Approach)',
+      airspaceType: 'ENROUTE',
+      category: 'CRUISE',
+      pilotTransmission: () => `${centerFacility}, ${tail}, 15 miles northwest of ${dep.icao}, level 4,500, request VFR flight following to ${dest.icao}.`,
         atcResponse: `${tail}, squawk 4321 and ident. Altimeter 30.12, radar contact.`,
         readback: `Squawk 4321, ${tail}.`
       });

@@ -39,17 +39,15 @@ export class AirportService {
 
     return this.http.get<AerodromeInfo[]>('assets/data/us-airports.json').pipe(
       tap(airports => {
-        airports.forEach(aero => {
-          if (aero.icao) {
-            const code = aero.icao.toUpperCase().trim();
-            this.aerodromeMap.set(code, aero);
-
-            // Also index without 'K' prefix if 4-letter US ICAO (e.g. KAKR -> AKR)
-            if (code.startsWith('K') && code.length === 4) {
-              this.aerodromeMap.set(code.substring(1), aero);
-            }
+        airports.forEach((aero: any) => {
+        const id = (aero.icao || aero.ident || aero.code || '').toUpperCase().trim();
+        if (id) {
+          this.aerodromeMap.set(id, aero);
+          if (id.startsWith('K') && id.length === 4) {
+            this.aerodromeMap.set(id.substring(1), aero);
           }
-        });
+        }
+      });
         this.isLoaded = true;
         console.log(`[FlyRight Co-Pilot] Offline aerodrome cache loaded: ${this.aerodromeMap.size} identifiers indexed.`);
       }),
@@ -64,27 +62,33 @@ export class AirportService {
     if (!code) code = 'KBTP';
     const clean = code.toUpperCase().trim();
 
-    // 1. Direct match
+    // 1. Direct match (e.g. 'L18' or 'KMYF')
     if (this.aerodromeMap.has(clean)) {
       return this.aerodromeMap.get(clean)!;
     }
 
-    // 2. Try prefixing 'K' for 3-letter inputs (e.g. POV -> KPOV)
+    // 2. Try stripping 'K' (e.g. 'KL18' -> 'L18')
+    if (clean.startsWith('K') && this.aerodromeMap.has(clean.substring(1))) {
+      return this.aerodromeMap.get(clean.substring(1))!;
+    }
+
+    // 3. Try prepending 'K' for 3-letter identifiers (e.g. 'MYF' -> 'KMYF')
     if (clean.length === 3 && this.aerodromeMap.has('K' + clean)) {
       return this.aerodromeMap.get('K' + clean)!;
     }
 
-    // 3. Fallback if code is missing from dataset
+    // Fallback: If totally missing from offline dataset, default near destination region (Fallbrook L18 coords)
     return {
       icao: clean,
       name: `${clean} Airfield`,
-      lat: 40.7767,
-      lng: -79.9494,
-      elevationFt: 1200,
+      lat: 33.3544,
+      lng: -117.2508,
+      elevationFt: 708,
       runwayHeadingDeg: 90,
-      runwayLengthFt: 5000
+      runwayLengthFt: 2160
     };
   }
+
 
   // FAA Private Pilot Standard: Checkpoints spaced every 10–15 NM
   getCorridorWaypoints(depIcao: string, destIcao: string, dep: AerodromeInfo, dest: AerodromeInfo): CorridorVrp[] {
@@ -92,21 +96,18 @@ export class AirportService {
     const dLng = (dest.lng - dep.lng) * 60 * Math.cos(((dep.lat + dest.lat) / 2) * (Math.PI / 180));
     const totalDistanceNm = Math.round(Math.sqrt(dLat * dLat + dLng * dLng));
 
-    // Space checkpoints ~12 NM apart along the route
+    // Calculate Magnetic Track
+    const y = Math.sin((dest.lng - dep.lng) * Math.PI / 180) * Math.cos(dest.lat * Math.PI / 180);
+    const x = Math.cos(dep.lat * Math.PI / 180) * Math.sin(dest.lat * Math.PI / 180) -
+              Math.sin(dep.lat * Math.PI / 180) * Math.cos(dest.lat * Math.PI / 180) * Math.cos((dest.lng - dep.lng) * Math.PI / 180);
+    const trackDeg = Math.round((Math.atan2(y, x) * 180 / Math.PI + 360) % 360);
+
+    // FAR 91.159 Hemispheric VFR Cruising Rule
+    const recommendedAlt = (trackDeg >= 0 && trackDeg <= 179) ? '3,500 / 5,500 FT MSL' : '4,500 / 6,500 FT MSL';
+
     const legIntervalNm = 12;
     const numCheckpoints = Math.max(1, Math.floor(totalDistanceNm / legIntervalNm));
     const waypoints: CorridorVrp[] = [];
-
-    const visualFeatures = [
-      'Prominent Highway Interchange / Toll Plaza',
-      'Large Reservoir Dam / Distinct Peninsula',
-      'Active Rail Siding & Industrial Silos',
-      'Radio Transmission Tower Array (Flashing Strobe)',
-      'River Bend / Confluence with Bridge',
-      'Race Track / High School Stadium Complex',
-      'Major Power Transmission Substation',
-      'Limestone Quarry Pit / Conveyor Structure'
-    ];
 
     for (let i = 1; i <= numCheckpoints; i++) {
       const fraction = i / (numCheckpoints + 1);
@@ -114,15 +115,14 @@ export class AirportService {
       const wLng = Number((dep.lng + (dest.lng - dep.lng) * fraction).toFixed(4));
       const legDist = Math.round(totalDistanceNm * fraction);
       const remainingNm = totalDistanceNm - legDist;
-      const feature = visualFeatures[(i - 1) % visualFeatures.length];
 
       waypoints.push({
         coords: [wLat, wLng],
-        label: `VRP ${i}: ${legDist} NM`,
-        desc: `<b>Visual Checkpoint ${i}</b><br>` +
-              `Ident: ${feature}<br>` +
-              `Leg: ${legDist} NM flown | ${remainingNm} NM to dest<br>` +
-              `VFR Cruising Guidance: Maintain assigned altitude & compass heading`
+        label: `VFR ${i}: ${legDist} NM`,
+        desc: `<b>VFR Checkpoint ${i} (${legDist} NM)</b><br>` +
+              `<b>Track:</b> ${trackDeg}° Mag | <b>Target Alt:</b> ${recommendedAlt}<br>` +
+              `<b>Dist Remaining:</b> ${remainingNm} NM to dest<br>` +
+              `<span style="font-size:10px; color:#94a3b8; font-style:italic;">Visual scan: Cross-check terrain, highways, rail & lakes on sectional</span>`
       });
     }
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs';
 import { Pilot, FlightMission } from '../models/pilot.model';
 
 @Injectable({
@@ -20,8 +21,20 @@ export class PilotService {
     return this.http.post<Pilot>(`${this.pilotApi}/login`, { email });
   }
 
-  createMission(mission: FlightMission): Observable<FlightMission> {
-    return this.http.post<FlightMission>(this.missionApi, mission);
+  createMission(mission: any): Observable<any> {
+    return this.http.post<any>(this.missionApi, mission).pipe(
+      catchError(err => {
+        console.warn('[Offline Mode] Mission sync to backend bypassed (500). Storing offline.', err.message);
+        try {
+          const offlineMissions = JSON.parse(localStorage.getItem('flyright_offline_missions') || '[]');
+          offlineMissions.push(mission);
+          localStorage.setItem('flyright_offline_missions', JSON.stringify(offlineMissions));
+        } catch (e) {
+          console.warn('[Offline Mode] Storage fallback failed', e);
+        }
+        return of({ ...mission, id: 'offline_' + Date.now() });
+      })
+    );
   }
 
   getPilotMissions(pilotId: number): Observable<FlightMission[]> {
