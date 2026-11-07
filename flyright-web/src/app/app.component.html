@@ -443,15 +443,15 @@
           </div>
         </div>
 
-        <div class="form-group" style="width: 100%; margin-bottom: 12px;">
-          <label>Departure Airport (ICAO)</label>
-          <input type="text" [(ngModel)]="missionForm.departureIcao" (ngModelChange)="updateAirportVisuals(missionForm.departureIcao)" name="deptIcao" placeholder="e.g. KBTP" required style="width: 100%; box-sizing: border-box;" />
+        <div style="width: 100%; margin-bottom: 12px; display: block; clear: both;">
+          <label style="display: block; margin-bottom: 4px; color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Departure Airport (ICAO)</label>
+          <input type="text" [(ngModel)]="missionForm.departureIcao" (ngModelChange)="updateAirportVisuals(missionForm.departureIcao)" name="deptIcao" placeholder="e.g. KBTP" required style="width: 100%; box-sizing: border-box; padding: 10px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; color: #f8fafc;" />
         </div>
 
-        <div class="form-group" style="width: 100%; margin-bottom: 16px;">
-          <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; box-sizing: border-box;">
-            <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="deptTowered" style="width: 18px; height: 18px; margin: 0; flex-shrink: 0;" />
-            <span style="font-size: 0.85rem; color: #94a3b8; white-space: normal; line-height: 1.2;">Towered Airspace (Class D/C/B)</span>
+        <div style="width: 100%; margin-bottom: 16px; display: block; clear: both;">
+          <label style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; gap: 10px !important; width: 100% !important; cursor: pointer; margin: 0 !important; padding: 0 !important;">
+            <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="deptTowered" style="width: 20px !important; height: 20px !important; min-width: 20px !important; margin: 0 !important; padding: 0 !important; flex-shrink: 0 !important;" />
+            <span style="font-size: 0.85rem !important; color: #94a3b8 !important; line-height: 1.2 !important; white-space: normal !important; text-align: left !important;">Towered Airspace (Class D/C/B)</span>
           </label>
         </div>
 

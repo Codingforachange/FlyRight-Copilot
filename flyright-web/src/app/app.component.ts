@@ -549,7 +549,6 @@ export class AppComponent implements OnInit {
  editFlightBriefing(): void {
   this.showMissionModal = true;
 
-  // Destroy stale map instance if present, wait for DOM render, then rebuild cleanly
   if (this.briefingMap) {
     try {
       this.briefingMap.remove();
@@ -561,6 +560,10 @@ export class AppComponent implements OnInit {
 
   setTimeout(() => {
     this.initBriefingMap();
+    // Re-draw runway strip, heading vector, and pattern box
+    if (this.missionForm && this.missionForm.departureIcao) {
+      this.updateAirportVisuals(this.missionForm.departureIcao);
+    }
   }, 250);
 }
 
