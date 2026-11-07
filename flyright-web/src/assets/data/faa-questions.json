@@ -1,0 +1,1302 @@
+[
+  {
+    "id": 1,
+    "category": "FARs",
+    "question": "What documents are required to be on board an aircraft prior to flight? (ARROW)",
+    "options": [
+      "Airworthiness Certificate, Registration, Radio Station License (intl), Operating Handbook (POH), Weight and Balance",
+      "Airworthiness, Logbooks, Insurance Policy, Weight and Balance",
+      "Pilot Certificate, Medical, Operating Limitations, Registration",
+      "Annual Inspection, Registration, Operating Handbook, Weight and Balance"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.203 requires Airworthiness, Registration, Radio Station License (International), Operating Limitations (POH), and Weight & Balance."
+  },
+  {
+    "id": 2,
+    "category": "FARs",
+    "question": "What are the minimum fuel reserve requirements for a day VFR cross-country flight?",
+    "options": [
+      "To destination plus 20 minutes at cruise speed",
+      "To destination plus 30 minutes at normal cruising speed",
+      "To destination plus 45 minutes at normal cruising speed",
+      "To destination plus 1 hour reserve"
+    ],
+    "correctIndex": 1,
+    "explanation": "14 CFR § 91.151 requires enough fuel to fly to the first point of intended landing and, assuming normal cruising speed, for at least 30 minutes during day (45 minutes at night)."
+  },
+  {
+    "id": 3,
+    "category": "FARs",
+    "question": "When must aircraft position/navigation lights be illuminated?",
+    "options": [
+      "Between sunset and sunrise",
+      "One hour after sunset to one hour before sunrise",
+      "Beginning at the end of evening civil twilight",
+      "Whenever flight visibility is less than 3 statute miles"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.209 requires navigation position lights to be lighted during the period from sunset to sunrise."
+  },
+  {
+    "id": 4,
+    "category": "FARs",
+    "question": "How long do you have to notify the FAA Airmen Certification Branch of a permanent mailing address change?",
+    "options": [
+      "14 days",
+      "30 days",
+      "60 days",
+      "90 days"
+    ],
+    "correctIndex": 1,
+    "explanation": "14 CFR § 61.60 states that after 30 days from the change of address date, you may not exercise certificate privileges unless you have notified the FAA in writing."
+  },
+  {
+    "id": 5,
+    "category": "FARs",
+    "question": "To act as pilot in command carrying passengers, what recent flight experience is required?",
+    "options": [
+      "3 takeoffs and landings within the preceding 90 days in the same category, class, and type (if required)",
+      "3 takeoffs and landings within the preceding 60 days in any aircraft",
+      "Flight review within the preceding 12 calendar months and 5 landings",
+      "6 instrument approaches and 3 landings within the preceding 6 months"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 61.57 requires 3 takeoffs and landings within the preceding 90 days in the same category, class, and type (if type rating required). For night currency, they must be to a full stop between 1 hour after sunset and 1 hour before sunrise."
+  },
+  {
+    "id": 6,
+    "category": "FARs",
+    "question": "What is the definition of night time for logging flight time as night flight?",
+    "options": [
+      "The time between the end of evening civil twilight and the beginning of morning civil twilight",
+      "1 hour after sunset to 1 hour before sunrise",
+      "Sunset to sunrise",
+      "Midnight to morning sunrise"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 1.1 defines night as the time between the end of evening civil twilight and the beginning of morning civil twilight as published in the American Air Almanac."
+  },
+  {
+    "id": 7,
+    "category": "FARs",
+    "question": "What is the blood alcohol concentration (BAC) limit and required wait time before acting as a flight crewmember?",
+    "options": [
+      "Less than 0.04% BAC and at least 8 hours bottle to throttle",
+      "0.00% BAC and at least 12 hours bottle to throttle",
+      "Less than 0.08% BAC and at least 24 hours bottle to throttle",
+      "Less than 0.02% BAC and at least 6 hours bottle to throttle"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.17 states no person may act as a crewmember within 8 hours after the consumption of any alcoholic beverage, or while having an alcohol concentration of 0.04 percent or more."
+  },
+  {
+    "id": 8,
+    "category": "FARs",
+    "question": "Except when necessary for takeoff or landing, what is the minimum safe altitude over a congested area?",
+    "options": [
+      "1,000 feet above the highest obstacle within a horizontal radius of 2,000 feet",
+      "500 feet above the surface or any person, vessel, vehicle, or structure",
+      "1,500 feet above the highest obstacle within a horizontal radius of 1 nautical mile",
+      "2,000 feet above ground level"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.119(b) prescribes an altitude of 1,000 feet above the highest obstacle within a horizontal radius of 2,000 feet of the aircraft over congested areas."
+  },
+  {
+    "id": 9,
+    "category": "FARs",
+    "question": "Who is directly responsible for, and is the final authority as to, the operation of an aircraft?",
+    "options": [
+      "The Pilot in Command (PIC)",
+      "The aircraft owner",
+      "Air Traffic Control",
+      "The certified flight instructor"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.3(a) states the pilot in command of an aircraft is directly responsible for, and is the final authority as to, the operation of that aircraft."
+  },
+  {
+    "id": 10,
+    "category": "FARs",
+    "question": "Under what condition may a pilot deviate from any rule of 14 CFR Part 91 without prior ATC permission?",
+    "options": [
+      "In an in-flight emergency requiring immediate action",
+      "When encountering unexpected cloud layers in VFR",
+      "When radio communication failure occurs in Class G airspace",
+      "Never under any circumstances"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.3(b) authorizes a pilot in command to deviate from any rule of Part 91 to the extent required to meet an in-flight emergency."
+  },
+  {
+    "id": 11,
+    "category": "FARs",
+    "question": "What required aircraft inspection must be completed every 12 calendar months for an aircraft operated under standard VFR?",
+    "options": [
+      "Annual inspection under 14 CFR § 91.409",
+      "100-hour inspection",
+      "Pitot-static system certification",
+      "VOR receiver check"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.409(a) requires an annual inspection every 12 calendar months. 100-hour inspections are only required for hire or flight instruction."
+  },
+  {
+    "id": 12,
+    "category": "FARs",
+    "question": "How often must the Emergency Locator Transmitter (ELT) battery be replaced or recharged?",
+    "options": [
+      "When the transmitter has been in use for more than 1 cumulative hour or 50% of useful battery life expires",
+      "Every 12 calendar months during the annual inspection",
+      "Every 24 calendar months",
+      "Every 500 flight hours"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.207(c) requires ELT batteries to be replaced or recharged when the transmitter has been in use for more than 1 cumulative hour, or when 50 percent of their useful life has expired."
+  },
+  {
+    "id": 13,
+    "category": "FARs",
+    "question": "What is the transponder and altitude reporting inspection interval under 14 CFR § 91.413?",
+    "options": [
+      "Every 24 calendar months",
+      "Every 12 calendar months",
+      "Every 36 calendar months",
+      "Only upon initial installation"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.413 requires transponders to be tested and inspected within the preceding 24 calendar months before use in controlled airspace."
+  },
+  {
+    "id": 14,
+    "category": "FARs",
+    "question": "According to FAR 91.159, what cruising altitude is required on a magnetic course of 000° through 179° above 3,000 feet AGL?",
+    "options": [
+      "Odd thousand-foot MSL altitude plus 500 feet (e.g., 3,500, 5,500)",
+      "Even thousand-foot MSL altitude plus 500 feet (e.g., 4,500, 6,500)",
+      "Any round thousand-foot altitude",
+      "Flight Level 180 and above"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.159: On a magnetic course of 000° to 179°, VFR cruising altitude must be an odd thousand-foot MSL altitude plus 500 feet (East is odd, plus 500)."
+  },
+  {
+    "id": 15,
+    "category": "FARs",
+    "question": "What flight review requirement must a private pilot complete every 24 calendar months to remain current?",
+    "options": [
+      "Minimum of 1 hour flight training and 1 hour ground training with an authorized instructor",
+      "3 takeoffs and landings to a full stop",
+      "An FAA practical check with a DPE",
+      "Online FAA safety course only"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 61.56 requires a flight review every 24 calendar months consisting of a minimum of 1 hour of ground training and 1 hour of flight training."
+  },
+  {
+    "id": 16,
+    "category": "FARs",
+    "question": "Under what condition may supplemental oxygen be required for the flight crew under Part 91?",
+    "options": [
+      "At cabin pressure altitudes above 12,500 feet MSL up to and including 14,000 feet MSL for duration exceeding 30 minutes",
+      "At all times above 10,000 feet MSL",
+      "Only when flying above 18,000 feet MSL",
+      "Above 12,000 feet MSL regardless of duration"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.211 requires the minimum flight crew to use supplemental oxygen for that part of the flight at cabin pressure altitudes above 12,500 feet up to and including 14,000 feet MSL that is more than 30 minutes duration."
+  },
+  {
+    "id": 17,
+    "category": "FARs",
+    "question": "When two aircraft of the same category are converging at approximately the same altitude, which aircraft has the right-of-way?",
+    "options": [
+      "The aircraft to the other's right",
+      "The aircraft to the other's left",
+      "The faster aircraft",
+      "The aircraft at the higher airspeed"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.113(d) establishes that when aircraft of the same category are converging at approximately the same altitude (except head-on), the aircraft to the other's right has the right-of-way."
+  },
+  {
+    "id": 18,
+    "category": "FARs",
+    "question": "When an aircraft is overtaking another from behind, which direction must the overtaking aircraft alter its heading?",
+    "options": [
+      "Alter course to the right and pass well clear",
+      "Alter course to the left and pass well clear",
+      "Climb 500 feet above the overtaken aircraft",
+      "Descend 500 feet below the overtaken aircraft"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.113(f) states each aircraft that is being overtaken has the right-of-way. The pilot of an overtaking aircraft shall alter course to the right to pass well clear."
+  },
+  {
+    "id": 19,
+    "category": "FARs",
+    "question": "What is the maximum indicated airspeed permitted below 10,000 feet MSL in the United States?",
+    "options": [
+      "250 knots",
+      "200 knots",
+      "180 knots",
+      "220 knots"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.117(a) dictates that no person may operate an aircraft below 10,000 feet MSL at an indicated airspeed of more than 250 knots (288 mph)."
+  },
+  {
+    "id": 20,
+    "category": "FARs",
+    "question": "What is the maximum airspeed allowed in the airspace underlying Class B airspace or in a VFR corridor through Class B?",
+    "options": [
+      "200 knots",
+      "250 knots",
+      "180 knots",
+      "220 knots"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.117(c) states that no person may operate an aircraft in the airspace underlying a Class B airspace area or in a VFR corridor designated through Class B at an indicated airspeed of more than 200 knots."
+  },
+  {
+    "id": 21,
+    "category": "FARs",
+    "question": "Under what condition may a private pilot receive compensation or share operating expenses?",
+    "options": [
+      "A pilot may pay pro-rata shares of fuel, oil, airport expenditures, or rental fees provided expenses are shared equally",
+      "A private pilot can charge passengers double the fuel cost",
+      "No compensation or expense sharing is permitted under any circumstances",
+      "Sharing expenses is allowed only if the pilot holds an instrument rating"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 61.113(c) allows a private pilot to share operating expenses directly with passengers on a pro-rata basis for fuel, oil, airport expenditures, or rental fees."
+  },
+  {
+    "id": 22,
+    "category": "FARs",
+    "question": "What pre-flight action is specifically mandated under 14 CFR § 91.103 for any flight not in the vicinity of an airport?",
+    "options": [
+      "Weather reports/forecasts, fuel requirements, alternatives available, and runway length/takeoff-landing distance data",
+      "A verified written weight and balance manifest signed by a CFI",
+      "Filing a formal flight plan with Flight Service (FSS)",
+      "Contacting destination tower prior to engine start"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.103 requires pilots before flight to become familiar with all available information, including weather reports/forecasts, fuel requirements, alternatives, and runway lengths/distances."
+  },
+  {
+    "id": 23,
+    "category": "FARs",
+    "question": "Under what conditions must each occupant of an aircraft wear an approved parachute under 14 CFR § 91.307?",
+    "options": [
+      "When executing intentional maneuvers exceeding a bank of 60° or a pitch attitude of 30° relative to the horizon",
+      "On all cross-country flights over mountainous terrain",
+      "When flying within 10 miles of international borders",
+      "During all stalls and slow flight training maneuvers"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.307(c) requires approved parachutes for all occupants if an intentional maneuver exceeds 60 degrees bank or 30 degrees pitch attitude, unless for flight tests or CFI spin training."
+  },
+  {
+    "id": 24,
+    "category": "FARs",
+    "question": "When is an operable Mode C transponder with ADS-B Out mandated by FAR 91.215 & 91.225?",
+    "options": [
+      "In Class A, B, and C airspace, within the Mode C veil (30 NM of Class B), and above 10,000 ft MSL (excluding at or below 2,500 ft AGL)",
+      "Only inside Class B surface areas",
+      "Only when flying under an IFR flight plan",
+      "In all controlled airspace at any altitude"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.215 and § 91.225 mandate operable Mode C and ADS-B Out equipment in Class A, B, and C, within 30 NM of Class B primary airports up to 10,000 ft MSL, and above 10,000 ft MSL (excluding at or below 2,500 ft AGL)."
+  },
+  {
+    "id": 25,
+    "category": "FARs",
+    "question": "What is the minimum flight visibility and cloud clearance required for VFR operations in Class G airspace at night below 1,200 feet AGL?",
+    "options": [
+      "3 statute miles visibility; 500 feet below, 1,000 feet above, 2,000 feet horizontal from clouds",
+      "1 statute mile visibility, clear of clouds",
+      "5 statute miles visibility; 1,000 feet below, 1,000 feet above",
+      "3 statute miles visibility, clear of clouds"
+    ],
+    "correctIndex": 0,
+    "explanation": "14 CFR § 91.155: In Class G airspace at night (below 1,200 ft AGL or below 10,000 ft MSL), standard VFR minimums increase to 3 statute miles visibility and 500' below, 1,000' above, and 2,000' horizontal cloud clearance."
+  },
+  {
+    "id": 26,
+    "category": "Aerodynamics",
+    "question": "What is the primary factor that causes an airplane wing to stall?",
+    "options": [
+      "Exceeding the critical angle of attack",
+      "Allowing airspeed to drop below published stall speed (Vs)",
+      "Operating in turbulent air at high power settings",
+      "Excessive forward center of gravity (CG)"
+    ],
+    "correctIndex": 0,
+    "explanation": "A stall occurs when the critical angle of attack is exceeded, regardless of airspeed, pitch attitude, or aircraft gross weight."
+  },
+  {
+    "id": 27,
+    "category": "Aerodynamics",
+    "question": "What flight condition creates the most intense wake turbulence vortices behind large transport aircraft?",
+    "options": [
+      "Heavy, clean, and slow",
+      "Fast, clean, and light",
+      "Heavy, dirty (gear & flaps down), and fast",
+      "Light, slow, and high power"
+    ],
+    "correctIndex": 0,
+    "explanation": "Wingtip vortices are strongest when the generating aircraft is heavy, clean (gear and flaps retracted), and operating at slow speeds (high angle of attack)."
+  },
+  {
+    "id": 28,
+    "category": "Aerodynamics",
+    "question": "What effect does an aft center of gravity (CG) location have on an aircraft's flight characteristics?",
+    "options": [
+      "Lower stall speed, higher cruise speed, and decreased stall/spin recovery capability",
+      "Higher stall speed and excessive longitudinal stability",
+      "Lower cruise speed and difficult flare during landing",
+      "Greater elevator control effectiveness at slow speeds with no change in stability"
+    ],
+    "correctIndex": 0,
+    "explanation": "An aft CG reduces wing loading (less tail-down force required), lowering stall speed and increasing cruise speed, but significantly degrades longitudinal stability and spin recovery."
+  },
+  {
+    "id": 29,
+    "category": "Aerodynamics",
+    "question": "What causes an airplane to enter a spin?",
+    "options": [
+      "Stalling while uncoordinated (yaw present)",
+      "High airspeed dive exceeding Vne",
+      "Steep turn bank angle exceeding 60 degrees",
+      "Rapidly pulling full aft elevator while in level cruise"
+    ],
+    "correctIndex": 0,
+    "explanation": "An aircraft must first be stalled, and then yaw must be introduced (uncoordinated flight), causing one wing to be more deeply stalled than the other."
+  },
+  {
+    "id": 30,
+    "category": "Aerodynamics",
+    "question": "What is the standard spin recovery procedure for single-engine trainer aircraft (PARE)?",
+    "options": [
+      "Power idle, Ailerons neutral, Rudder full opposite spin, Elevator forward briskly",
+      "Power full, Ailerons opposite roll, Rudder neutral, Elevator back",
+      "Power idle, Ailerons full into spin, Rudder full opposite, Elevator aft",
+      "Rudder neutral, Power full, Ailerons neutral, Elevator level"
+    ],
+    "correctIndex": 0,
+    "explanation": "The standard spin recovery sequence is: Power to idle, Ailerons neutral, Rudder full opposite to the direction of rotation, Elevator forward briskly to break the stall."
+  },
+  {
+    "id": 31,
+    "category": "Aerodynamics",
+    "question": "What is the primary cause of P-Factor in single-engine propeller aircraft during high angle of attack climbs?",
+    "options": [
+      "The descending propeller blade takes a larger bite of air and produces more thrust than the ascending blade",
+      "Torque reaction rolling the aircraft counter-clockwise",
+      "Gyroscopic precession acting on the rotating propeller mass",
+      "Spiraling slipstream striking the left side of the vertical stabilizer"
+    ],
+    "correctIndex": 0,
+    "explanation": "At high angles of attack, the descending propeller blade on the right has a higher relative velocity and higher angle of attack, creating asymmetric thrust and yawing the nose left."
+  },
+  {
+    "id": 32,
+    "category": "Aerodynamics",
+    "question": "How does entering ground effect change an airplane's aerodynamic behavior during landing flare?",
+    "options": [
+      "Induced drag decreases significantly, causing floating and a reduction in required thrust",
+      "Parasite drag decreases, causing an immediate sink rate",
+      "Stall speed increases rapidly near the surface",
+      "Wingtip vortices become larger and pull the nose down"
+    ],
+    "correctIndex": 0,
+    "explanation": "Ground effect restricts the formation of wingtip vortices and downwash within one wingspan of the surface, drastically reducing induced drag and causing the aircraft to float."
+  },
+  {
+    "id": 33,
+    "category": "Aerodynamics",
+    "question": "What is the load factor (G-load) experienced by an aircraft in a coordinated 60° banked level turn?",
+    "options": [
+      "2.00 Gs",
+      "1.41 Gs",
+      "3.00 Gs",
+      "1.50 Gs"
+    ],
+    "correctIndex": 0,
+    "explanation": "Load factor in a level turn equals 1 / cos(bank angle). For 60°, 1 / cos(60°) = 1 / 0.5 = 2.0 Gs. The effective stall speed increases by approximately 41%."
+  },
+  {
+    "id": 34,
+    "category": "Aerodynamics",
+    "question": "What is maneuvering speed (Va)?",
+    "options": [
+      "The maximum speed at which full, abrupt control deflection can be made without overstressing the aircraft structure",
+      "The best rate of climb speed under turbulent conditions",
+      "The maximum flap extension speed during turbulent approaches",
+      "The maximum structural cruising speed in smooth air"
+    ],
+    "correctIndex": 0,
+    "explanation": "Maneuvering speed (Va) is the speed below which an aircraft will stall before exceeding its limit load factor when abrupt full control movement is applied."
+  },
+  {
+    "id": 35,
+    "category": "Aerodynamics",
+    "question": "How does an increase in aircraft gross weight affect maneuvering speed (Va)?",
+    "options": [
+      "Maneuvering speed increases as aircraft weight increases",
+      "Maneuvering speed decreases as aircraft weight increases",
+      "Maneuvering speed remains constant at all weights",
+      "Va varies only with density altitude, not weight"
+    ],
+    "correctIndex": 0,
+    "explanation": "Heavier aircraft must fly at higher angles of attack for any given speed, meaning they reach the critical stall angle before structural G-limits are exceeded; hence, Va increases with weight."
+  },
+  {
+    "id": 36,
+    "category": "Aerodynamics",
+    "question": "What are the four left-turning tendencies of a propeller-driven single-engine airplane?",
+    "options": [
+      "Torque reaction, Spiraling slipstream, Gyroscopic precession, and P-factor (asymmetric blade loading)",
+      "Adverse yaw, Induced drag, Wake turbulence, and Coriolis effect",
+      "Ground effect, Mach tuck, Centrifugal force, and Propeller wash",
+      "Slipstream effect, Dihedral effect, Aileron drag, and Longitudinal instability"
+    ],
+    "correctIndex": 0,
+    "explanation": "The four fundamental left-turning tendencies in single-engine propeller airplanes are Torque Reaction, Spiraling Slipstream, Gyroscopic Precession, and Asymmetric Blade Effect (P-factor)."
+  },
+  {
+    "id": 37,
+    "category": "Aerodynamics",
+    "question": "What is adverse yaw and what flight control is used to correct it?",
+    "options": [
+      "The tendency of the aircraft to yaw away from the direction of bank caused by induced drag on the upward-moving wing; corrected by rudder",
+      "The nose pulling down in steep turns; corrected by back elevator pressure",
+      "A roll opposite to rudder input caused by dihedral; corrected by aileron",
+      "A yaw produced by gyroscopic force during pitch changes; corrected by throttle reduction"
+    ],
+    "correctIndex": 0,
+    "explanation": "When an aircraft banks, the downward-deflected aileron creates more lift and therefore more induced drag, yawing the nose away from the turn. Rudder is coordinated to eliminate adverse yaw."
+  },
+  {
+    "id": 38,
+    "category": "Instruments",
+    "question": "If the pitot tube becomes completely blocked by ice while its drain hole remains open, what will the airspeed indicator show?",
+    "options": [
+      "Zero knots",
+      "It will act like an altimeter, reading higher as the airplane climbs",
+      "It will freeze at the last recorded speed and not change",
+      "It will peg at maximum redline airspeed"
+    ],
+    "correctIndex": 0,
+    "explanation": "If the ram air pitot inlet freezes shut while the drain hole remains open, pressure bleeds out through the drain hole, dropping indicated airspeed to zero."
+  },
+  {
+    "id": 39,
+    "category": "Instruments",
+    "question": "If both the pitot tube and its drain hole freeze completely shut, how will the airspeed indicator behave?",
+    "options": [
+      "It will act like an altimeter: indicating faster in climbs and slower in descents",
+      "It will instantly drop to zero",
+      "It will indicate a constant 65 knots regardless of pitch or power",
+      "It will act in reverse: indicating slower in climbs and faster in descents"
+    ],
+    "correctIndex": 0,
+    "explanation": "With trapped ram pressure inside the diaphragm, as ambient static pressure decreases in a climb, the diaphragm expands, causing the airspeed indicator to read higher like an altimeter."
+  },
+  {
+    "id": 40,
+    "category": "Instruments",
+    "question": "What instruments are affected if the aircraft static port freezes over while flying at altitude?",
+    "options": [
+      "Airspeed indicator, Altimeter, and Vertical Speed Indicator (VSI)",
+      "Airspeed indicator and Attitude indicator only",
+      "Altimeter and Turn Coordinator only",
+      "VSI and Heading indicator only"
+    ],
+    "correctIndex": 0,
+    "explanation": "The static port supplies reference ambient pressure to the pitot-static instruments: the Altimeter (freezes), the VSI (reads zero), and the Airspeed Indicator (reads erroneous)."
+  },
+  {
+    "id": 41,
+    "category": "Instruments",
+    "question": "What is the primary operational difference between the Turn and Slip Indicator and the Turn Coordinator?",
+    "options": [
+      "The Turn Coordinator senses both roll rate and yaw rate due to its canted gimbal, while the Turn and Slip Indicator senses only yaw rate",
+      "The Turn Coordinator uses a barometric capsule, while the Turn and Slip uses a gyro",
+      "The Turn and Slip indicator measures coordinated roll angle, while the Turn Coordinator does not",
+      "There is no functional difference; they are identical instruments"
+    ],
+    "correctIndex": 0,
+    "explanation": "The gyro in a Turn Coordinator is canted upward at approximately 30 degrees, allowing it to respond to both initial rate of roll and continuous rate of yaw."
+  },
+  {
+    "id": 42,
+    "category": "Instruments",
+    "question": "What magnetic compass error occurs when accelerating on an east or west heading in the Northern Hemisphere (ANDS)?",
+    "options": [
+      "The compass indicates a turn toward the north during acceleration",
+      "The compass indicates a turn toward the south during acceleration",
+      "The compass freezes directly on 090 or 270 degrees",
+      "The compass lags behind the true heading by 30 degrees"
+    ],
+    "correctIndex": 0,
+    "explanation": "Using the ANDS rule (Accelerate North, Decelerate South): accelerating on an easterly or westerly heading causes inertia on the compass card to register a turn toward North."
+  },
+  {
+    "id": 43,
+    "category": "Instruments",
+    "question": "What compass turning error occurs when turning through a northerly heading in the Northern Hemisphere (NOSE)?",
+    "options": [
+      "The compass initially lags or turns in the opposite direction before catching up",
+      "The compass leads the turn and reads ahead of the aircraft heading",
+      "The compass vibrates violently and stays pinned to East",
+      "The compass shows zero turning error regardless of latitude"
+    ],
+    "correctIndex": 0,
+    "explanation": "Northerly turning error (North Opposite, South Exaggerated): when rolling into a turn from a heading of North, the compass initially swings in the opposite direction or lags behind."
+  },
+  {
+    "id": 44,
+    "category": "Instruments",
+    "question": "What gyroscopic principle causes an attitude indicator or directional gyro to slowly drift away from true alignment over time?",
+    "options": [
+      "Gyroscopic precession and friction (apparent precession)",
+      "Rigidity in space resisting rotation",
+      "Centrifugal force acting against the pendulous vanes",
+      "Pitot pressure loss inside the instrument casing"
+    ],
+    "correctIndex": 0,
+    "explanation": "Due to mechanical friction in the gimbals and the rotation of the Earth beneath the spinning rotor, heading indicators experience precession error and require periodic resetting to the magnetic compass."
+  },
+  {
+    "id": 45,
+    "category": "Instruments",
+    "question": "When setting the altimeter prior to flight, what is the maximum permissible error compared to the surveyed airport elevation?",
+    "options": [
+      "±75 feet",
+      "±20 feet",
+      "±150 feet",
+      "±100 feet"
+    ],
+    "correctIndex": 0,
+    "explanation": "FAA instrument cross-check standards require that when set to the local altimeter setting, the altimeter must agree within ±75 feet of the known field elevation."
+  },
+  {
+    "id": 46,
+    "category": "Instruments",
+    "question": "What is the consequence of failing to adjust the altimeter setting when flying from a region of high barometric pressure into a region of low barometric pressure?",
+    "options": [
+      "The altimeter will indicate higher than the true altitude of the aircraft ('High to low, look out below')",
+      "The altimeter will indicate lower than the true altitude",
+      "The altimeter will remain calibrated to true altitude automatically",
+      "The vertical speed indicator will show a continuous climb"
+    ],
+    "correctIndex": 0,
+    "explanation": "'High to low, look out below': Flying into low pressure without updating the Kollsman window causes the altimeter to register higher than actual, putting the aircraft closer to terrain."
+  },
+  {
+    "id": 47,
+    "category": "Instruments",
+    "question": "What does the green arc on an airspeed indicator represent?",
+    "options": [
+      "The normal operating range of the aircraft (from Vs1 to Vno)",
+      "The flap operating range (from Vso to Vfe)",
+      "The caution range where operations should be conducted only in smooth air",
+      "The best glide speed range"
+    ],
+    "correctIndex": 0,
+    "explanation": "The green arc indicates the normal operating range, bounded at the bottom by Vs1 (stall speed clean at maximum takeoff weight) and at the top by Vno (maximum structural cruising speed)."
+  },
+  {
+    "id": 48,
+    "category": "Instruments",
+    "question": "What does the bottom of the white arc on an airspeed indicator designate?",
+    "options": [
+      "Vso: Stall speed in the landing configuration (gear and flaps fully extended)",
+      "Vs1: Stall speed in a clean configuration",
+      "Vfe: Maximum flap extended speed",
+      "Vx: Best angle of climb speed"
+    ],
+    "correctIndex": 0,
+    "explanation": "The white arc represents the flap operating range. The lower limit is Vso (stall speed in the landing configuration), and the upper limit is Vfe (maximum flap extended speed)."
+  },
+  {
+    "id": 49,
+    "category": "Instruments",
+    "question": "If alternate static air is activated inside the cockpit of an unpressurized aircraft, how will the altimeter and airspeed indicator respond?",
+    "options": [
+      "The altimeter and airspeed indicator will both read slightly higher than actual due to lower cabin pressure",
+      "Both instruments will read significantly lower than actual",
+      "The altimeter will read zero while airspeed drops to stall speed",
+      "There will be no noticeable change on any pitot-static instrument"
+    ],
+    "correctIndex": 0,
+    "explanation": "Cockpit air pressure in an unpressurized airplane in flight is slightly lower than outside ambient air due to airflow around the fuselage. Selecting alternate static source causes altimeter and airspeed to indicate slightly high."
+  },
+  {
+    "id": 50,
+    "category": "Instruments",
+    "question": "What does the red radial line on an airspeed indicator signify?",
+    "options": [
+      "Vne: Never-exceed speed",
+      "Vno: Maximum structural cruising speed",
+      "Va: Maneuvering speed",
+      "Vfe: Maximum full flap speed"
+    ],
+    "correctIndex": 0,
+    "explanation": "The red radial line marks Vne (Never-Exceed Speed). Operating beyond this speed risks flutter or structural deformation/failure."
+  },
+   {
+    "id": 51,
+    "category": "Weather",
+    "question": "What does the abbreviation 'SPECI' indicate when appearing at the beginning of a METAR report?",
+    "options": [
+      "A non-routine special weather report issued due to significant condition changes",
+      "A routine hourly observation with pilot-reported ceiling changes",
+      "A specific forecast derived from terminal aerodrome predictions",
+      "A special low-altitude convective advisory"
+    ],
+    "correctIndex": 0,
+    "explanation": "A SPECI is an unscheduled special weather report issued between routine hourly METARs when critical weather parameters (such as visibility, ceiling, wind shifts, or thunderstorms) rapidly deteriorate or improve."
+  },
+  {
+    "id": 52,
+    "category": "Weather",
+    "question": "Under what ambient conditions is carburetor icing most likely to develop in flight?",
+    "options": [
+      "Temperatures between 20°F and 70°F (-7°C to 21°C) with high relative humidity (above 80%)",
+      "Temperatures below 0°F (-18°C) in dry air",
+      "Temperatures above 85°F (29°C) with convective rain",
+      "Exclusively during freezing rain or drizzle"
+    ],
+    "correctIndex": 0,
+    "explanation": "Carb ice can form even in warm weather (up to 70°F or higher) whenever relative humidity is high, because the vaporization of fuel and pressure drop in the venturi cools the mixture by up to 40°F."
+  },
+  {
+    "id": 53,
+    "category": "Weather",
+    "question": "What cloud type poses the greatest structural and flight hazards to VFR aviation due to severe turbulence, icing, and hail?",
+    "options": [
+      "Cumulonimbus",
+      "Altocumulus castellanus",
+      "Stratocumulus",
+      "Cirrocumulus"
+    ],
+    "correctIndex": 0,
+    "explanation": "Cumulonimbus clouds (thunderstorms) produce severe updrafts/downdrafts, microbursts, extreme structural icing, lightning, and large damaging hail."
+  },
+  {
+    "id": 54,
+    "category": "Weather",
+    "question": "What three conditions are necessary for the formation of a thunderstorm?",
+    "options": [
+      "High humidity (moisture), an unstable lapse rate, and a lifting action",
+      "High barometric pressure, cold temperatures, and strong headwind",
+      "Low relative humidity, warm surface layer, and inversion aloft",
+      "Stratus cloud decks, light surface winds, and warm advection"
+    ],
+    "correctIndex": 0,
+    "explanation": "The three essential ingredients for thunderstorm development are: sufficient moisture, unstable air, and an initial lifting mechanism (such as thermal convection, frontal passage, or orographic lifting)."
+  },
+  {
+    "id": 55,
+    "category": "Weather",
+    "question": "What weather hazard is characterized by intense, localized downdrafts producing hazardous wind shear near the ground?",
+    "options": [
+      "Microburst",
+      "Temperature inversion",
+      "Radiation fog",
+      "Valley breeze"
+    ],
+    "correctIndex": 0,
+    "explanation": "A microburst is a powerful, short-lived localized convective downdraft that creates extreme horizontal and vertical wind shear capable of exceeding the climb performance of light aircraft."
+  },
+  {
+    "id": 56,
+    "category": "Weather",
+    "question": "What is the standard sea-level temperature and barometric pressure in the standard atmosphere?",
+    "options": [
+      "15°C (59°F) and 29.92 inHg (1013.2 hPa)",
+      "0°C (32°F) and 30.00 inHg (1000.0 hPa)",
+      "20°C (68°F) and 29.82 inHg (1020.0 hPa)",
+      "10°C (50°F) and 29.95 inHg (1010.0 hPa)"
+    ],
+    "correctIndex": 0,
+    "explanation": "Standard sea-level conditions are defined as a temperature of 15°C (59°F) and a barometric pressure of 29.92 inches of mercury (1013.25 mb/hPa), with a standard lapse rate of 2°C per 1,000 feet."
+  },
+  {
+    "id": 57,
+    "category": "Weather",
+    "question": "What definition correctly describes density altitude?",
+    "options": [
+      "Pressure altitude corrected for non-standard temperature",
+      "The altitude indicated directly on the altimeter",
+      "Altitude above the ground surface (AGL)",
+      "True altitude corrected for instrument and installation errors"
+    ],
+    "correctIndex": 0,
+    "explanation": "Density altitude is pressure altitude corrected for non-standard temperature. High density altitude significantly reduces engine horsepower, propeller efficiency, and wing lift."
+  },
+  {
+    "id": 58,
+    "category": "Weather",
+    "question": "How does high density altitude affect takeoff distance and climb performance?",
+    "options": [
+      "Longer takeoff roll and reduced rate of climb",
+      "Shorter takeoff roll and increased rate of climb",
+      "No effect on takeoff distance, but increases fuel consumption",
+      "Decreases true airspeed at any indicated stall speed"
+    ],
+    "correctIndex": 0,
+    "explanation": "Less dense air reduces engine power output, decreases propeller thrust, and provides fewer air molecules over the wings, resulting in longer ground rolls and degraded climb rates."
+  },
+  {
+    "id": 59,
+    "category": "Weather",
+    "question": "What type of fog typically forms on clear, calm nights with light wind as terrestrial radiation cools the surface?",
+    "options": [
+      "Radiation fog",
+      "Advection fog",
+      "Upslope fog",
+      "Steam fog"
+    ],
+    "correctIndex": 0,
+    "explanation": "Radiation fog occurs when the ground radiates heat into space on clear nights with calm or light winds, cooling the adjacent air down to its dew point."
+  },
+  {
+    "id": 60,
+    "category": "Weather",
+    "question": "What type of fog is formed when warm, moist air moves horizontally over a cold surface?",
+    "options": [
+      "Advection fog",
+      "Radiation fog",
+      "Precipitation fog",
+      "Upslope fog"
+    ],
+    "correctIndex": 0,
+    "explanation": "Advection fog forms when moist air moves horizontally over a colder surface (common along coastal areas) and often persists in moderate wind conditions."
+  },
+  {
+    "id": 61,
+    "category": "Weather",
+    "question": "What does a narrow temperature-dew point spread (less than 3°C / 5°F) indicate?",
+    "options": [
+      "High probability of fog, low ceilings, or precipitation",
+      "Clear, smooth flying conditions throughout the day",
+      "Rapidly decreasing density altitude",
+      "Strong thermal convective updrafts"
+    ],
+    "correctIndex": 0,
+    "explanation": "When surface temperature and dew point are within 3°C of each other, the relative humidity approaches 100%, indicating impending fog, mist, or low stratus cloud formation."
+  },
+  {
+    "id": 62,
+    "category": "Weather",
+    "question": "In a Terminal Aerodrome Forecast (TAF), what does the abbreviation 'TEMPO' denote?",
+    "options": [
+      "Temporary fluctuations expected to last less than an hour at a time and cover less than half the period",
+      "A permanent change in prevailing conditions",
+      "A sudden temperature shift exceeding 10 degrees",
+      "A forecast valid only during daytime hours"
+    ],
+    "correctIndex": 0,
+    "explanation": "The 'TEMPO' indicator in a TAF signifies temporary conditions that are expected to last for less than 1 hour each instance and cumulatively cover less than half of the specified period."
+  },
+  {
+    "id": 63,
+    "category": "Weather",
+    "question": "What hazard is associated with a temperature inversion near the surface?",
+    "options": [
+      "Low-level wind shear, trapped pollutants/haze, and sudden turbulence upon penetration",
+      "Excessive high-altitude thermal updrafts",
+      "Rapidly increasing barometric pressure causing instrument failure",
+      "Continuous microburst activity in clear air"
+    ],
+    "correctIndex": 0,
+    "explanation": "Temperature inversions trap poor visibility beneath them and frequently create severe low-level wind shear at the boundary where the warm inversion layer meets the cold surface air."
+  },
+  {
+    "id": 64,
+    "category": "Weather",
+    "question": "What structural icing type is characterized by hard, heavy, and transparent ice formed by large supercooled water droplets?",
+    "options": [
+      "Clear ice",
+      "Rime ice",
+      "Mixed ice",
+      "Frost"
+    ],
+    "correctIndex": 0,
+    "explanation": "Clear ice forms when large supercooled water droplets slowly freeze across the airfoil surface, creating a heavy, solid, and transparent sheet that is extremely difficult to remove."
+  },
+  {
+    "id": 65,
+    "category": "Weather",
+    "question": "What type of in-flight weather advisory is issued for convective hazards hazardous to all aircraft?",
+    "options": [
+      "Convective SIGMET (WST)",
+      "AIRMET Sierra",
+      "Center Weather Advisory (CWA)",
+      "Non-convective SIGMET (WS)"
+    ],
+    "correctIndex": 0,
+    "explanation": "Convective SIGMETs are issued for severe thunderstorms, lines of thunderstorms, embedded storms, tornadoes, and hail 3/4 inch or greater, presenting extreme hazards to all aircraft."
+  },
+  {
+    "id": 66,
+    "category": "Weather",
+    "question": "What weather condition does an AIRMET Sierra alert pilots to?",
+    "options": [
+      "IFR conditions and extensive mountain obscuration",
+      "Moderate to severe turbulence and surface winds exceeding 30 knots",
+      "Moderate aircraft icing and freezing level heights",
+      "Low-level wind shear below 2,000 feet AGL"
+    ],
+    "correctIndex": 0,
+    "explanation": "AIRMET Sierra designates widespread IFR conditions (ceilings below 1,000 feet and/or visibility less than 3 statute miles) and extensive mountain obscurations."
+  },
+  {
+    "id": 67,
+    "category": "Weather",
+    "question": "What weather phenomenon is indicated by the issuance of an AIRMET Tango?",
+    "options": [
+      "Moderate turbulence, sustained surface winds of 30 knots or greater, and non-convective low-level wind shear",
+      "Widespread IFR conditions and fog",
+      "Moderate structural icing conditions",
+      "Severe convective storm clusters"
+    ],
+    "correctIndex": 0,
+    "explanation": "AIRMET Tango alerts aviators to moderate turbulence, sustained surface winds of 30 knots or greater, and low-level wind shear potential."
+  },
+  {
+    "id": 68,
+    "category": "Weather",
+    "question": "What does AIRMET Zulu notify pilots regarding flight conditions?",
+    "options": [
+      "Moderate icing and freezing level data",
+      "Mountain wave activity and severe clear air turbulence",
+      "Low visibility and volcanic ash dispersion",
+      "Temporary runway closures due to crosswinds"
+    ],
+    "correctIndex": 0,
+    "explanation": "AIRMET Zulu warns pilots of moderate icing conditions and provides freezing level contours across the specified region."
+  },
+  {
+    "id": 69,
+    "category": "Weather",
+    "question": "What change in wind and temperature occurs across a standard cold front passage?",
+    "options": [
+      "Wind shifts typically from southwest to northwest with a sudden drop in temperature",
+      "Wind shifts from east to south with a sharp temperature increase",
+      "Wind remains constant from the south while barometric pressure steadily falls",
+      "Wind dies to calm conditions with widespread advection fog"
+    ],
+    "correctIndex": 0,
+    "explanation": "As a typical cold front passes, winds veer (shift clockwise) from south/southwest to west/northwest, barometric pressure rises, and temperatures drop sharply."
+  },
+  {
+    "id": 70,
+    "category": "Weather",
+    "question": "What is frost and why must it be completely removed from all lifting surfaces before takeoff?",
+    "options": [
+      "Frost disrupts smooth boundary-layer airflow, significantly reducing lift and increasing stall speed",
+      "Frost only increases aircraft weight without changing aerodynamic lift",
+      "Frost melts immediately on the takeoff ground roll due to friction",
+      "Frost is permitted if covering less than 20% of the horizontal stabilizer"
+    ],
+    "correctIndex": 0,
+    "explanation": "Even a light layer of frost roughness disrupts smooth airflow over the wing surface, leading to early airflow separation, a drastic loss of lift (up to 30%), and a marked increase in stall speed."
+  },
+  {
+    "id": 71,
+    "category": "Weather",
+    "question": "In a METAR report, how is calm wind encoded?",
+    "options": [
+      "00000KT",
+      "VRB00KT",
+      "CALM",
+      "WND00KT"
+    ],
+    "correctIndex": 0,
+    "explanation": "In standard aviation routine weather reports (METAR), a wind speed of less than 1 knot is reported as calm using the code '00000KT'."
+  },
+  {
+    "id": 72,
+    "category": "Weather",
+    "question": "What does the code 'BKN015' in a standard METAR indicate?",
+    "options": [
+      "Broken cloud ceiling at 1,500 feet above ground level (AGL)",
+      "Broken clouds at 15,000 feet MSL",
+      "Scattered cloud bases at 1,500 feet AGL",
+      "Overcast cloud deck at 150 feet AGL"
+    ],
+    "correctIndex": 0,
+    "explanation": "METAR cloud heights are reported in hundreds of feet AGL. 'BKN015' means a broken cloud layer (5/8 to 7/8 sky cover, constituting a ceiling) at 1,500 feet AGL."
+  },
+  {
+    "id": 73,
+    "category": "Weather",
+    "question": "What is the standard dry adiabatic lapse rate?",
+    "options": [
+      "3.0°C (5.4°F) per 1,000 feet",
+      "2.0°C (3.5°F) per 1,000 feet",
+      "1.0°C (1.8°F) per 1,000 feet",
+      "4.5°C (8.1°F) per 1,000 feet"
+    ],
+    "correctIndex": 0,
+    "explanation": "Unsaturated (dry) air cools at the dry adiabatic lapse rate of approximately 3.0°C (5.4°F) per 1,000 feet of altitude gain."
+  },
+  {
+    "id": 74,
+    "category": "Weather",
+    "question": "What is radiation cooling and when does it most readily create surface inversions?",
+    "options": [
+      "Cooling of the Earth's surface on clear, dry, calm nights, chilling the air immediately above it",
+      "Cooling caused by evaporating precipitation under cloud bases",
+      "Cooling produced when air expands as it rises over mountains",
+      "Cooling caused by arctic cold air advecting over lakes"
+    ],
+    "correctIndex": 0,
+    "explanation": "Radiation cooling happens when the Earth radiates heat into space on clear nights with calm winds, resulting in cooler air near the surface than aloft (surface temperature inversion)."
+  },
+  {
+    "id": 75,
+    "category": "Weather",
+    "question": "What is the primary indicator of convective turbulence along an approaching squall line?",
+    "options": [
+      "Roll clouds (arcus) or a distinct shelf cloud along the gust front",
+      "Lenticular standing wave clouds",
+      "Cirrus uncinus mares' tails",
+      "Fair-weather cumulus with flat bases"
+    ],
+    "correctIndex": 0,
+    "explanation": "Roll clouds or shelf clouds along the leading edge of a squall line or thunderstorm gust front indicate extreme wind shear and severe convective turbulence."
+  },
+  {
+    "id": 76,
+    "category": "Airspace",
+    "question": "What is the standard vertical dimension of Class D airspace unless otherwise designated?",
+    "options": [
+      "Surface up to 2,500 feet above airport elevation (MSL rounded)",
+      "Surface up to 1,200 feet AGL",
+      "Surface up to 4,000 feet MSL",
+      "1,200 feet AGL up to 10,000 feet MSL"
+    ],
+    "correctIndex": 0,
+    "explanation": "Class D airspace generally extends upward from the surface to 2,500 feet above the airport elevation (charted in MSL rounded up)."
+  },
+  {
+    "id": 77,
+    "category": "Airspace",
+    "question": "What two-way radio communication requirement must be met before entering Class C airspace?",
+    "options": [
+      "Two-way communications must be established; ATC must state your specific aircraft call sign",
+      "Explicit clearance: 'Cleared into Class C airspace'",
+      "Monitoring the tower frequency on standby is sufficient",
+      "Filing a VFR flight plan with FSS"
+    ],
+    "correctIndex": 0,
+    "explanation": "To enter Class C, two-way radio communication must be established. If the controller responds with your call sign (e.g., 'Skyhawk 734SP, standby'), communications are established and entry is permitted."
+  },
+  {
+    "id": 78,
+    "category": "Airspace",
+    "question": "What is required to enter Class B airspace under VFR?",
+    "options": [
+      "An explicit clearance stating 'Cleared into Class B airspace', two-way radio, and an operable Mode C transponder with ADS-B Out",
+      "Two-way radio communication with your tail number read back",
+      "A private pilot certificate with an instrument rating",
+      "VFR flight following confirmed by Flight Service"
+    ],
+    "correctIndex": 0,
+    "explanation": "No person may operate an aircraft within Class B airspace without an explicit ATC clearance: 'Cleared into the Class B airspace', plus two-way radio, altitude-reporting transponder, and ADS-B Out."
+  },
+  {
+    "id": 79,
+    "category": "Airspace",
+    "question": "What are the standard VFR weather minimums in Class C, D, and E airspace below 10,000 feet MSL?",
+    "options": [
+      "3 statute miles visibility; 500 feet below, 1,000 feet above, and 2,000 feet horizontal from clouds (3-152)",
+      "1 statute mile visibility, clear of clouds",
+      "5 statute miles visibility; 1,000 feet below, 1,000 feet above, 1 SM horizontal",
+      "3 statute miles visibility, clear of clouds"
+    ],
+    "correctIndex": 0,
+    "explanation": "The standard '3-152' rule applies to Class C, D, and E below 10,000 ft MSL: 3 statute miles flight visibility, with cloud clearance of 500 ft below, 1,000 ft above, and 2,000 ft horizontal."
+  },
+  {
+    "id": 80,
+    "category": "Airspace",
+    "question": "What are the basic VFR weather minimums in Class B airspace?",
+    "options": [
+      "3 statute miles visibility and clear of clouds",
+      "3 statute miles visibility; 500 feet below, 1,000 feet above, 2,000 feet horizontal",
+      "1 statute mile visibility and 1,000-foot ceiling",
+      "5 statute miles visibility and clear of clouds"
+    ],
+    "correctIndex": 0,
+    "explanation": "In Class B airspace, VFR operations require 3 statute miles flight visibility and remaining clear of clouds (no distance standoff required)."
+  },
+  {
+    "id": 81,
+    "category": "Airspace",
+    "question": "What vertical boundaries define Class A airspace in the contiguous United States?",
+    "options": [
+      "From 18,000 feet MSL up to and including FL 600 (60,000 feet)",
+      "From 14,500 feet MSL to 24,000 feet MSL",
+      "From 10,000 feet MSL to 18,000 feet MSL",
+      "Above 12,500 feet MSL to FL 450"
+    ],
+    "correctIndex": 0,
+    "explanation": "Class A airspace extends from 18,000 feet MSL (FL 180) up to and including Flight Level 600 across the 48 contiguous states and Alaska, and requires an IFR flight plan and rating."
+  },
+  {
+    "id": 82,
+    "category": "Airspace",
+    "question": "What action is required prior to flying through a Military Operations Area (MOA) under VFR?",
+    "options": [
+      "Prior clearance is not legally required for VFR, but extreme caution should be exercised and contacting the controlling agency is advised",
+      "Strict clearance must be received from the controlling ARTCC prior to penetration",
+      "VFR flight through an active MOA is strictly prohibited",
+      "An active IFR flight plan must be filed"
+    ],
+    "correctIndex": 0,
+    "explanation": "VFR pilots are not legally prohibited from entering an active MOA and do not need clearance, but extreme caution must be exercised due to high-speed military maneuvers. Contacting FSS or radar is strongly encouraged."
+  },
+  {
+    "id": 83,
+    "category": "Airspace",
+    "question": "Can a VFR flight operate through a charted Restricted Area?",
+    "options": [
+      "Only with prior authorization from the using or controlling agency when the area is not active",
+      "Yes, freely at any time provided an ADS-B transponder is operating",
+      "Never under any circumstances; entry is always prohibited",
+      "Only between sunset and sunrise"
+    ],
+    "correctIndex": 0,
+    "explanation": "Restricted areas denote unusual, invisible hazards (artillery, missiles). Flights through them may only be conducted with permission from the controlling or using agency."
+  },
+  {
+    "id": 84,
+    "category": "Airspace",
+    "question": "What is the typical lateral dimension of the outer shelf of Class C airspace?",
+    "options": [
+      "10 nautical miles radius from the primary airport",
+      "5 nautical miles radius",
+      "20 nautical miles radius",
+      "15 nautical miles radius"
+    ],
+    "correctIndex": 0,
+    "explanation": "Standard Class C consists of a 5 NM radius core surface area up to 4,000 ft above field elevation, and a 10 NM radius shelf extending from 1,200 ft up to 4,000 ft."
+  },
+  {
+    "id": 85,
+    "category": "Airspace",
+    "question": "What does a broken magenta circle on a sectional chart depict?",
+    "options": [
+      "Class E airspace starting at the surface",
+      "Class D airspace surface boundary",
+      "Class G airspace up to 14,500 feet",
+      "A National Security Area"
+    ],
+    "correctIndex": 0,
+    "explanation": "A dashed magenta line indicates Class E airspace that begins at the surface around an airport."
+  },
+  {
+    "id": 86,
+    "category": "Airspace",
+    "question": "What does a shaded magenta vignette on a sectional chart indicate regarding Class E airspace?",
+    "options": [
+      "Class E airspace floor begins at 700 feet AGL (the transition area)",
+      "Class E airspace begins at the surface",
+      "Class E airspace begins at 1,200 feet AGL inside the shaded border",
+      "Class E airspace is discontinued"
+    ],
+    "correctIndex": 0,
+    "explanation": "The magenta vignette shows the floor of Class E airspace starting at 700 feet above the surface (transition area); outside the shaded area it typically begins at 1,200 feet AGL."
+  },
+  {
+    "id": 87,
+    "category": "Navigation",
+    "question": "What is the relationship between True Heading (TH), Magnetic Course (MC), and Magnetic Variation?",
+    "options": [
+      "Magnetic Course = True Course ± Magnetic Variation (East is least, West is best)",
+      "Magnetic Course = True Heading + Compass Deviation",
+      "True Course = Magnetic Course - Wind Correction Angle",
+      "Magnetic Variation = Compass Deviation + True Course"
+    ],
+    "correctIndex": 0,
+    "explanation": "Using the classic mnemonic: True Course ± Wind Correction Angle = True Heading; True Course ± Variation = Magnetic Course (subtract East variation, add West variation: 'East is least, West is best')."
+  },
+  {
+    "id": 88,
+    "category": "Navigation",
+    "question": "What is compass deviation?",
+    "options": [
+      "The compass error caused by local magnetic fields within the aircraft's electrical and metal structure",
+      "The angular difference between True North and Magnetic North",
+      "The error caused by accelerating or decelerating on east/west headings",
+      "The dipping error when turning through north or south"
+    ],
+    "correctIndex": 0,
+    "explanation": "Compass deviation is the deflection of the compass needle caused by electromagnetic disturbances, wiring, and iron/steel components inside the specific aircraft, documented on the compass correction card."
+  },
+  {
+    "id": 89,
+    "category": "Navigation",
+    "question": "What is an isogonic line on a sectional aeronautical chart?",
+    "options": [
+      "A broken magenta line connecting points of equal magnetic variation",
+      "A line connecting points of identical barometric pressure",
+      "A contour line indicating terrain elevation above sea level",
+      "A route connecting automated weather observation stations (AWOS)"
+    ],
+    "correctIndex": 0,
+    "explanation": "Isogonic lines are dashed magenta lines plotted on aeronautical charts that connect points of equal magnetic variation between True North and Magnetic North."
+  },
+  {
+    "id": 90,
+    "category": "Navigation",
+    "question": "When flying directly over a VOR station, what visual indication occurs on the CDI?",
+    "options": [
+      "The TO/FROM indicator changes or flips, and the needle oscillates through the 'cone of confusion'",
+      "The needle stays locked centered with continuous TO flag",
+      "The OFF flag permanently stays visible until re-tuned",
+      "The DME displays negative distance mileage"
+    ],
+    "correctIndex": 0,
+    "explanation": "Directly above the transmitter is the 'cone of confusion' where signals cannot be interpreted reliably; the TO/FROM indicator flips (from TO to FROM) and the needle fluctuates."
+  },
+  {
+    "id": 91,
+    "category": "Navigation",
+    "question": "What is the standard width of a Federal VOR airway (Victor Airway)?",
+    "options": [
+      "8 nautical miles total (4 NM on each side of the centerline)",
+      "10 nautical miles total",
+      "4 nautical miles total",
+      "12 nautical miles total"
+    ],
+    "correctIndex": 0,
+    "explanation": "Federal airways (Victor airways) have a standard width of 8 nautical miles (4 NM on either side of the centerline) up to 51 NM from the navaid, widening at a 4.5° angle beyond that."
+  },
+  {
+    "id": 92,
+    "category": "Navigation",
+    "question": "What does a VOR receiver indication with full deflection of the CDI needle represent on a standard VOR indicator?",
+    "options": [
+      "10 degrees or more off course (each dot equals 2 degrees off centerline)",
+      "5 degrees off course",
+      "20 degrees off course",
+      "2 nautical miles off track regardless of distance"
+    ],
+    "correctIndex": 0,
+    "explanation": "On a standard VOR display, each dot on the scale represents 2 degrees of course deviation. Full 5-dot scale deflection indicates the aircraft is 10 degrees or more off the selected radial."
+  },
+  {
+    "id": 93,
+    "category": "Navigation",
+    "question": "What emergency transponder code is set to indicate an immediate in-flight emergency?",
+    "options": [
+      "Squawk 7700",
+      "Squawk 7600",
+      "Squawk 7500",
+      "Squawk 1200"
+    ],
+    "correctIndex": 0,
+    "explanation": "Transponder emergency squawk codes: 7500 for hijack/unlawful interference, 7600 for lost communications, and 7700 for general emergency."
+  },
+  {
+    "id": 94,
+    "category": "Navigation",
+    "question": "What squawk code indicates two-way radio communications failure?",
+    "options": [
+      "Squawk 7600",
+      "Squawk 7700",
+      "Squawk 7500",
+      "Squawk 7400"
+    ],
+    "correctIndex": 0,
+    "explanation": "Squawk 7600 informs ATC radar displays that the aircraft has lost two-way radio communication capability."
+  },
+  {
+    "id": 95,
+    "category": "Navigation",
+    "question": "What does an alternating flashing red and green light gun signal from the tower indicate to an aircraft in flight?",
+    "options": [
+      "Exercise extreme caution",
+      "Cleared to land",
+      "Airport unsafe, do not land",
+      "Return for landing (followed by steady green)"
+    ],
+    "correctIndex": 0,
+    "explanation": "An alternating flashing red and green light gun signal directed toward an aircraft in flight or on the ground means 'Exercise extreme caution'."
+  },
+  {
+    "id": 96,
+    "category": "Navigation",
+    "question": "What does a steady red light gun signal from the tower mean to an aircraft in flight?",
+    "options": [
+      "Give way to other aircraft and continue circling",
+      "Airport unsafe, do not land",
+      "Cleared to land immediately",
+      "Taxi clear of active runway"
+    ],
+    "correctIndex": 0,
+    "explanation": "A steady red light directed to an aircraft in flight means 'Give way to other aircraft and continue circling'."
+  },
+  {
+    "id": 97,
+    "category": "Navigation",
+    "question": "What does a flashing red light gun signal indicate to an aircraft in flight?",
+    "options": [
+      "Airport unsafe, do not land",
+      "Cleared to land",
+      "Give way and continue circling",
+      "Return for landing"
+    ],
+    "correctIndex": 0,
+    "explanation": "A flashing red light directed to an aircraft in flight signifies 'Airport unsafe, do not land'."
+  },
+  {
+    "id": 98,
+    "category": "Navigation",
+    "question": "What does a steady green light gun signal indicate to an aircraft in flight and on the ground, respectively?",
+    "options": [
+      "Cleared to land in flight; Cleared for takeoff on the ground",
+      "Return for landing in flight; Cleared to taxi on the ground",
+      "Exercise caution in flight; Stop immediately on the ground",
+      "Airport safe in flight; Hold short on the ground"
+    ],
+    "correctIndex": 0,
+    "explanation": "Steady green means 'Cleared to land' when in flight, and 'Cleared for takeoff' when on the ground."
+  },
+  {
+    "id": 99,
+    "category": "Navigation",
+    "question": "What is the recommended entry procedure for entering an uncontrolled airport traffic pattern under FAA Advisory Circular 90-66C?",
+    "options": [
+      "Enter at a 45-degree angle to the midpoint of the downwind leg at traffic pattern altitude",
+      "Straight-in descent to final approach at 5 miles out",
+      "Cross directly over the center of the active runway at pattern altitude",
+      "Enter on base leg at 500 feet above ground level"
+    ],
+    "correctIndex": 0,
+    "explanation": "FAA AC 90-66C recommends entering the traffic pattern at a 45-degree angle to the downwind leg at midpoint, level at pattern altitude (typically 1,000 ft AGL)."
+  },
+  {
+    "id": 100,
+    "category": "Navigation",
+    "question": "What emergency transponder code is used to alert ATC of an in-flight hijacking or unlawful interference?",
+    "options": [
+      "Squawk 7500",
+      "Squawk 7600",
+      "Squawk 7700",
+      "Squawk 1202"
+    ],
+    "correctIndex": 0,
+    "explanation": "Squawk 7500 is the designated ICAO/FAA emergency code indicating hijacking or unlawful interference."
+  }
+]

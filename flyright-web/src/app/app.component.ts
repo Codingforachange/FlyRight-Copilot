@@ -1670,13 +1670,8 @@ export class AppComponent implements OnInit {
   }
 
   resetDailyCards(): void {
-    if (!this.dailyDeck) return;
-    this.dailyDeck.currentIndex = 0;
-    this.dailyDeck.score = 0;
-    this.dailyDeck.answers = {};
-    this.dailyDeck.completed = false;
+    this.dailyDeck = this.flashcardService.resetSession(true);
     this.selectedFlashcardOption = null;
     this.showFlashcardExplanation = false;
-    this.flashcardService.saveSession(this.dailyDeck);
   }
 }
