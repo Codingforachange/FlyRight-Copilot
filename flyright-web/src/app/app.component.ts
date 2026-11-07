@@ -558,12 +558,19 @@ export class AppComponent implements OnInit {
     this.briefingMap = null;
   }
 
+  // Allow the Angular modal DOM element to mount
   setTimeout(() => {
     this.initBriefingMap();
-    // Re-draw runway strip, heading vector, and pattern box
-    if (this.missionForm && this.missionForm.departureIcao) {
-      this.updateAirportVisuals(this.missionForm.departureIcao);
-    }
+
+    // Force Leaflet to calculate container pixel bounds, then draw vector layers
+    setTimeout(() => {
+      if (this.briefingMap) {
+        this.briefingMap.invalidateSize();
+      }
+      if (this.missionForm && this.missionForm.departureIcao) {
+        this.updateAirportVisuals(this.missionForm.departureIcao);
+      }
+    }, 150);
   }, 250);
 }
 
