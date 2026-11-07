@@ -594,10 +594,12 @@ export class AppComponent implements OnInit {
 
       // Clean out previous layers
       if ((this as any).briefingOverlayGroup) {
-        (this as any).briefingOverlayGroup.clearLayers();
-      } else {
-        (this as any).briefingOverlayGroup = (L as any).layerGroup().addTo(this.briefingMap);
-      }
+  try {
+    (this as any).briefingOverlayGroup.clearLayers();
+    (this as any).briefingOverlayGroup.remove();
+  } catch (e) {}
+}
+(this as any).briefingOverlayGroup = (L as any).layerGroup().addTo(this.briefingMap);
 
       // Convert runway feet length to lat/lng offsets based on true compass heading
       const lengthInNm = aero.runwayLengthFt / 6076.12;
