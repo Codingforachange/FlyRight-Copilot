@@ -546,6 +546,10 @@ export class AppComponent implements OnInit {
     }
   }
 
+  editFlightBriefing(): void {
+    this.showMissionModal = true;
+  }
+
   switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP' | 'FLASHCARDS'): void {
     this.activeCockpitView = view;
     if (view === 'NAV_MAP') {

@@ -28,6 +28,11 @@
     </div>
 
     <div class="header-actions">
+
+      <button type="button" class="btn-change-flight" (click)="editFlightBriefing()">
+  ‹     Change Flight / Airport
+      </button>
+
       <!-- HUD COCKPIT VIEW TOGGLE -->
       <div class="view-toggle-group">
         <button type="button" class="view-pill-btn" [class.active]="activeCockpitView === 'CHECKLIST'" (click)="switchCockpitView('CHECKLIST')">
