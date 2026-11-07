@@ -443,13 +443,15 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group flex-1">
+        <div class="form-group" style="width: 100%; margin-bottom: 12px;">
           <label>Departure Airport (ICAO)</label>
-          <input type="text" [(ngModel)]="missionForm.departureIcao" (ngModelChange)="updateAirportVisuals(missionForm.departureIcao)" name="deptIcao" placeholder="e.g. KBTP" required />
-          <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="depTowered" />
-            Towered Airspace (Class D/C/B)
+          <input type="text" [(ngModel)]="missionForm.departureIcao" (ngModelChange)="updateAirportVisuals(missionForm.departureIcao)" name="deptIcao" placeholder="e.g. KBTP" required style="width: 100%; box-sizing: border-box;" />
+        </div>
+
+        <div class="form-group" style="width: 100%; margin-bottom: 16px;">
+          <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; box-sizing: border-box;">
+            <input type="checkbox" [(ngModel)]="missionForm.departureTowered" name="deptTowered" style="width: 18px; height: 18px; margin: 0; flex-shrink: 0;" />
+            <span style="font-size: 0.85rem; color: #94a3b8; white-space: normal; line-height: 1.2;">Towered Airspace (Class D/C/B)</span>
           </label>
         </div>
 
@@ -461,7 +463,7 @@
               Towered Airspace
             </label>
           </div>
-        </div>
+        
 
         <!-- EMERGENCY DIVERSION / ALTERNATE AIRPORT -->
         <div class="form-group flex-1" *ngIf="missionForm.flightType === 'CROSS_COUNTRY'">

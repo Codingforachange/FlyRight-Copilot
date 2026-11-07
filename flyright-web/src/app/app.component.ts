@@ -546,16 +546,21 @@ export class AppComponent implements OnInit {
     }
   }
 
-  editFlightBriefing(): void {
+ editFlightBriefing(): void {
   this.showMissionModal = true;
 
-  // Let the DOM render the modal, then trigger Leaflet to redraw the map canvas
-  setTimeout(() => {
-    if (this.briefingMap) {
-      this.briefingMap.invalidateSize();
-    } else {
-      this.initBriefingMap();
+  // Destroy stale map instance if present, wait for DOM render, then rebuild cleanly
+  if (this.briefingMap) {
+    try {
+      this.briefingMap.remove();
+    } catch (e) {
+      // Map instance already detached
     }
+    this.briefingMap = null;
+  }
+
+  setTimeout(() => {
+    this.initBriefingMap();
   }, 250);
 }
 
