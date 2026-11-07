@@ -1655,21 +1655,26 @@ aside.radio-drawer.open,
 }
 
 /* On mobile screens, stack the airport input and the towered airspace toggle vertically */
-@media (max-width: 600px) {
-  .modal-card.mission-card .form-row {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    width: 100%;
+/* Stack airport input and checkbox vertically on all mobile screens */
+@media (max-width: 768px) {
+  .form-row,
+  .mission-dispatch .form-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
 
-  .modal-card.mission-card .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-    white-space: normal;
-    font-size: 0.8rem;
+  .form-row .checkbox-label,
+  .checkbox-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+    white-space: normal !important;
+    font-size: 0.85rem !important;
   }
 }

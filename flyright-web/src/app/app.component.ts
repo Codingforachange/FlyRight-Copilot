@@ -547,8 +547,17 @@ export class AppComponent implements OnInit {
   }
 
   editFlightBriefing(): void {
-    this.showMissionModal = true;
-  }
+  this.showMissionModal = true;
+
+  // Let the DOM render the modal, then trigger Leaflet to redraw the map canvas
+  setTimeout(() => {
+    if (this.briefingMap) {
+      this.briefingMap.invalidateSize();
+    } else {
+      this.initBriefingMap();
+    }
+  }, 250);
+}
 
   switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP' | 'FLASHCARDS'): void {
     this.activeCockpitView = view;
@@ -1116,7 +1125,7 @@ export class AppComponent implements OnInit {
       if ('isOnboardingComplete' in this) (this as any).isOnboardingComplete = true;
 
       this.cdr.detectChanges();
-    }, 4200);
+    }, 14000);
 
     this.loadChecklist(this.missionForm.aircraftModelCode);
     this.fetchWeatherBriefing(this.missionForm.departureIcao);
