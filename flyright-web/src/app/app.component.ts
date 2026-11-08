@@ -578,6 +578,10 @@ export class AppComponent implements OnInit {
 }
 
   switchCockpitView(view: 'CHECKLIST' | 'NAV_MAP' | 'FLASHCARDS'): void {
+    if (view === 'NAV_MAP' && !this.subService.isPro$.value) {
+      this.openPaywall();
+      return;
+    }
     this.activeCockpitView = view;
     if (view === 'NAV_MAP') {
       this.initCockpitNavMap();
@@ -1707,8 +1711,13 @@ export class AppComponent implements OnInit {
     this.flashcardService.saveSession(this.dailyDeck);
   }
 
-  resetDailyCards(): void {
-    this.dailyDeck = this.flashcardService.resetSession(true);
+   resetDailyCards(): void {
+    const freshDeck = this.flashcardService.resetSession(true);
+    if (!freshDeck) {
+      this.openPaywall();
+      return;
+    }
+    this.dailyDeck = freshDeck;
     this.selectedFlashcardOption = null;
     this.showFlashcardExplanation = false;
   }

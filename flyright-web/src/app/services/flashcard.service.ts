@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import faaQuestionsData from '../../assets/data/faa-questions.json';
+import { SubscriptionService } from './subscription.service';
 
 
 export interface Flashcard {
@@ -28,7 +29,9 @@ export class FlashcardService {
 
  private readonly QUESTION_BANK: Flashcard[] = faaQuestionsData as Flashcard[];
 
-  constructor() {}
+  constructor(private subService: SubscriptionService) {
+
+  }
 
   private shuffleCard(card: Flashcard): Flashcard {
   const correctText = card.options[card.correctIndex];
@@ -84,7 +87,16 @@ export class FlashcardService {
     }
   }
 
-  resetSession(newRandomDeck: boolean = true): DailyDeckState {
+  canStartUnlimitedSession(): boolean {
+    return this.subService.isPro$.value;
+  }
+
+  resetSession(newRandomDeck: boolean = true): DailyDeckState | null {
+    // If attempting an unlimited fresh session without Pro, block and return null
+    if (newRandomDeck && !this.subService.isPro$.value) {
+      return null;
+    }
+
     const todayKey = this.getTodayDateKey();
     const seed = newRandomDeck ? `${todayKey}-${Date.now()}` : todayKey;
     const dailyCards = this.selectTenDailyCards(seed);
