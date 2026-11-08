@@ -30,6 +30,23 @@ export class FlashcardService {
 
   constructor() {}
 
+  private shuffleCard(card: Flashcard): Flashcard {
+  const correctText = card.options[card.correctIndex];
+  const shuffledOptions = [...card.options];
+  
+  for (let i = shuffledOptions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+  }
+  
+  return {
+    ...card,
+    options: shuffledOptions,
+    correctIndex: shuffledOptions.indexOf(correctText)
+  };
+}
+
+
   /**
    * Deterministically returns 10 flashcards for the current day.
    * If a session was already started or completed today, it restores that state from localStorage.
@@ -46,7 +63,7 @@ export class FlashcardService {
     const dailyCards = this.selectTenDailyCards(todayKey);
     const newSession: DailyDeckState = {
       dateKey: todayKey,
-      cards: dailyCards,
+      cards: dailyCards.map(c => this.shuffleCard(c)),
       currentIndex: 0,
       answers: {},
       score: 0,
@@ -74,7 +91,7 @@ export class FlashcardService {
 
     const freshSession: DailyDeckState = {
       dateKey: todayKey,
-      cards: dailyCards,
+      cards: dailyCards.map(c => this.shuffleCard(c)),
       currentIndex: 0,
       answers: {},
       score: 0,
