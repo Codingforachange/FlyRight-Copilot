@@ -1,0 +1,47 @@
+<div class="paywall-overlay">
+  <div class="paywall-card">
+    <button class="close-btn" (click)="onDismiss()">✕</button>
+
+    <div class="header">
+      <h2>Unlock Fly Right Pro</h2>
+      <p class="subtitle">Get full offline access to tools, radio guides, and unlimited daily ground school prep.</p>
+    </div>
+
+    <div class="plans-container" *ngIf="(subService.offerings$ | async) as packages">
+      <div 
+        *ngFor="let pkg of packages"
+        class="plan-card" 
+        [class.selected]="selectedPackage?.identifier === pkg.identifier"
+        (click)="selectPackage(pkg)">
+        
+        <div class="plan-header">
+          <span class="plan-title">{{ pkg.product.title }}</span>
+          <span class="badge" *ngIf="pkg.identifier === '$rc_annual'">Best Value</span>
+        </div>
+
+        <div class="plan-price">
+          {{ pkg.product.priceString }}
+        </div>
+      </div>
+    </div>
+
+    <div class="action-section">
+      <button 
+        class="cta-btn" 
+        [disabled]="loading || !selectedPackage" 
+        (click)="onPurchase()">
+        {{ loading ? 'Processing...' : 'Continue with ' + (selectedPackage?.product?.title || 'Pro') }}
+      </button>
+
+      <div class="secondary-actions">
+        <button class="link-btn" [disabled]="loading" (click)="onRestore()">
+          Restore Purchases
+        </button>
+      </div>
+
+      <p class="legal-note">
+        Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.
+      </p>
+    </div>
+  </div>
+</div>

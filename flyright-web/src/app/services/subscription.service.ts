@@ -44,11 +44,33 @@ export class SubscriptionService {
       const offerings = await Purchases.getOfferings();
       if (offerings.current && offerings.current.availablePackages.length > 0) {
         this.offerings$.next(offerings.current.availablePackages);
+        return;
       }
     } catch (err) {
-      console.error('Failed to fetch offerings:', err);
+      console.warn('Native RevenueCat offerings unavailable (running in web browser). Using dev fallback packages.', err);
     }
+
+    // Dev fallback packages so the UI renders fully on localhost/web:
+    const mockPackages: any[] = [
+      {
+        identifier: '$rc_monthly',
+        packageType: 'MONTHLY',
+        product: { identifier: 'flyright_999_1m', title: 'Monthly Access', priceString: '$9.99/mo' }
+      },
+      {
+        identifier: '$rc_six_month',
+        packageType: 'SIX_MONTH',
+        product: { identifier: 'flyright_4900_6m', title: '6-Month Pass', priceString: '$49.00' }
+      },
+      {
+        identifier: '$rc_annual',
+        packageType: 'ANNUAL',
+        product: { identifier: 'flyright_7900_1y', title: 'Annual Pro', priceString: '$79.00/yr' }
+      }
+    ];
+    this.offerings$.next(mockPackages as PurchasesPackage[]);
   }
+
 
   async purchase(pkg: PurchasesPackage): Promise<boolean> {
     try {

@@ -1677,4 +1677,24 @@ aside.radio-drawer.open,
     white-space: normal !important;
     font-size: 0.85rem !important;
   }
+
+  .btn-upgrade-pro {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #111827;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-upgrade-pro:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
 }

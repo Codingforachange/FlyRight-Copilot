@@ -29,6 +29,13 @@
 
     <div class="header-actions">
 
+      <button 
+        *ngIf="!(subService.isPro$ | async)" 
+        class="btn-upgrade-pro" 
+        (click)="openPaywall()">
+        ⚡ Upgrade Pro
+      </button>
+
       <button type="button" class="btn-change-flight" (click)="editFlightBriefing()">
   ‹     Change Flight / Airport
       </button>
@@ -622,3 +629,7 @@
     </div>
   </div>
 </div>
+<app-paywall 
+  *ngIf="showPaywallModal" 
+  (close)="showPaywallModal = false">
+</app-paywall>

@@ -10,6 +10,8 @@ import { FlightLoadingComponent } from './components/flight-loading/flight-loadi
 import { PilotLoginComponent } from './components/pilot-login/pilot-login.component';
 import { AirportService } from './services/airport.service';
 import { FlashcardService,DailyDeckState,Flashcard } from './services/flashcard.service';
+import { PaywallComponent } from './components/paywall/paywall.component';
+import { SubscriptionService } from './services/subscription.service';
 import { from } from 'rxjs';
 
 import * as L from 'leaflet';
@@ -18,7 +20,7 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, FlightLoadingComponent, PilotLoginComponent],
+  imports: [CommonModule, FormsModule, FlightLoadingComponent, PilotLoginComponent, PaywallComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -39,6 +41,7 @@ export class AppComponent implements OnInit {
   showRadioDrawer = false;
   showDebriefModal: boolean = false;
   showLogbookModal: boolean = false;
+  showPaywallModal: boolean = false;
   flightLogs: any[] = [];
   engineStartTime: Date | null = null;
   engineStopTime: Date | null = null;
@@ -740,13 +743,18 @@ export class AppComponent implements OnInit {
     }
   }
 
-   constructor(
+   openPaywall(): void {
+    this.showPaywallModal = true;
+  }
+
+  constructor(
     private checklistService: ChecklistService,
     public pilotService: PilotService,
     public airportService: AirportService,
     private weatherService: WeatherService,
     public cdr: ChangeDetectorRef,
-    public flashcardService: FlashcardService
+    public flashcardService: FlashcardService,
+    public subService: SubscriptionService
   ) {}
 
   ngOnInit(): void {
