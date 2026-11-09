@@ -48,6 +48,7 @@ jobs:
             -scheme App \
             -destination "generic/platform=iOS" \
             -archivePath "build/App.xcarchive" \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             archive \
             CODE_SIGNING_ALLOWED=NO
 
