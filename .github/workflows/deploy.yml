@@ -44,6 +44,29 @@ jobs:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
+          # 1. Create the export options plist file dynamically
+          cat <<EOF > exportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>teamID</key>
+              <string>2B6P9Y533J</string>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+          # 2. Archive workspace
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination "generic/platform=iOS" \
@@ -52,11 +75,13 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
+          # 3. Export IPA
           xcodebuild -exportArchive \
             -archivePath "build/App.xcarchive" \
             -exportPath "build/export" \
-            -exportOptionsPlist exportOptions.plist || true
+            -exportOptionsPlist exportOptions.plist
 
+          # 4. Upload IPA to TestFlight
           xcrun altool --upload-app \
             --type ios \
             --file "build/export/App.ipa" \
