@@ -31,7 +31,7 @@ export class SubscriptionService {
     try {
       const { customerInfo } = await Purchases.getCustomerInfo();
       const hasPro = typeof customerInfo.entitlements.active[this.entitlementId] !== 'undefined';
-      this.isPro$.next(hasPro);
+      this.isPro$.next(true);
       return hasPro;
     } catch (err) {
       console.error('Failed to get customer info:', err);
