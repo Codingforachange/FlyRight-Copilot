@@ -25,6 +25,10 @@ jobs:
         working-directory: flyright-web
         run: npm run build
 
+      - name: Update CocoaPods Repositories
+        working-directory: flyright-web/ios/App
+        run: pod repo update
+
       - name: Sync Capacitor iOS
         working-directory: flyright-web
         run: npx cap sync ios
