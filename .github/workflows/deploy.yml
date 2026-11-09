@@ -44,27 +44,7 @@ jobs:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          cat <<EOF > exportOptions.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>destination</key>
-              <string>upload</string>
-              <key>method</key>
-              <string>app-store-connect</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-              <key>stripSwiftSymbols</key>
-              <true/>
-              <key>teamID</key>
-              <string>2B6P9Y533J</string>
-              <key>uploadSymbols</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-
+          # 1. Archive the workspace
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination "generic/platform=iOS" \
@@ -73,10 +53,15 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          xcodebuild -exportArchive \
-            -archivePath "build/App.xcarchive" \
-            -exportOptionsPlist exportOptions.plist \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8" \
-            -authenticationKeyID "$KEY_ID" \
-            -authenticationKeyIssuerID "$ISSUER_ID"
+          # 2. Package the app payload directly into an IPA container
+          mkdir -p build/export/Payload
+          cp -r build/App.xcarchive/Products/Applications/App.app build/export/Payload/
+          cd build/export
+          zip -qr App.ipa Payload
+
+          # 3. Upload directly to TestFlight via Apple's App Store Connect API
+          xcrun altool --upload-app \
+            --type ios \
+            --file App.ipa \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
