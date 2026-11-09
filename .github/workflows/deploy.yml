@@ -25,9 +25,13 @@ jobs:
         working-directory: flyright-web
         run: npm run build
 
-      - name: Sync Capacitor iOS
+      - name: Sync Capacitor iOS Assets
         working-directory: flyright-web
-        run: npx cap sync ios
+        run: npx cap copy ios
+
+      - name: Install Pods with CDN Repo Update
+        working-directory: flyright-web/ios/App
+        run: pod install --repo-update
 
       - name: Set up Apple App Store Connect API Key
         run: |
