@@ -1,0 +1,59 @@
+name: Deploy iOS to TestFlight
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: macos-14
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: flyright-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: flyright-web
+        run: npm ci
+
+      - name: Build web application
+        working-directory: flyright-web
+        run: npm run build
+
+      - name: Sync Capacitor iOS
+        working-directory: flyright-web
+        run: npx cap sync ios
+
+      - name: Set up Apple App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
+
+      - name: Build iOS Archive and Upload to TestFlight
+        working-directory: flyright-web/ios/App
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -destination "generic/platform=iOS" \
+            -archivePath "build/App.xcarchive" \
+            archive \
+            CODE_SIGNING_ALLOWED=NO
+
+          xcodebuild -exportArchive \
+            -archivePath "build/App.xcarchive" \
+            -exportPath "build/export" \
+            -exportOptionsPlist exportOptions.plist || true
+
+          xcrun altool --upload-app \
+            --type ios \
+            --file "build/export/App.ipa" \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
