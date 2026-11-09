@@ -31,10 +31,11 @@ export class SubscriptionService {
     try {
       const { customerInfo } = await Purchases.getCustomerInfo();
       const hasPro = typeof customerInfo.entitlements.active[this.entitlementId] !== 'undefined';
-      this.isPro$.next(true);
+      this.isPro$.next(hasPro);
       return hasPro;
     } catch (err) {
       console.error('Failed to get customer info:', err);
+      this.isPro$.next(false);
       return false;
     }
   }
