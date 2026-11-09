@@ -60,12 +60,12 @@ export class SubscriptionService {
       {
         identifier: '$rc_six_month',
         packageType: 'SIX_MONTH',
-        product: { identifier: 'flyright_4900_6m', title: '6-Month Pass', priceString: '$49.00' }
+        product: { identifier: 'flyright_4900_6m', title: '6-Month Pass', priceString: '$49.99' }
       },
       {
         identifier: '$rc_annual',
         packageType: 'ANNUAL',
-        product: { identifier: 'flyright_7900_1y', title: 'Annual Pro', priceString: '$79.00/yr' }
+        product: { identifier: 'flyright_7900_1y', title: 'Annual Pro', priceString: '$79.99/yr' }
       }
     ];
     this.offerings$.next(mockPackages as PurchasesPackage[]);
