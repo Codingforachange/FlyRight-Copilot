@@ -37,17 +37,18 @@ jobs:
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
           echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
 
-      - name: Build iOS Archive and Upload to TestFlight
+      - name: Build iOS Archive, Sign, and Upload to TestFlight
         working-directory: flyright-web/ios/App
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # 1. Update Info.plist and project bundle identifier to match App Store Connect
+          # 1. Align Info.plist Bundle Identifier
           plutil -replace CFBundleIdentifier -string "com.flyrightcopilot.flyrightcopilot" App/Info.plist || true
 
-          # 2. Archive workspace with iOS 15 deployment target and explicit bundle ID
+          # 2. Build the Xcode Archive
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination "generic/platform=iOS" \
@@ -57,16 +58,45 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          # 3. Package into IPA container
-          mkdir -p build/export/Payload
-          cp -r build/App.xcarchive/Products/Applications/App.app build/export/Payload/
-          cd build/export
-          zip -qr App.ipa Payload
+          # 3. Create Export Options Plist
+          cat <<EOF > exportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>teamID</key>
+              <string>2B6P9Y533J</string>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
 
-          # 4. Upload directly to TestFlight using exact Apple ID and Bundle ID
+          # 4. Export the archive with automatic provisioning to inject embedded.mobileprovision
+          xcodebuild -exportArchive \
+            -archivePath "build/App.xcarchive" \
+            -exportPath "build/export" \
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
+
+          # 5. Locate the exported IPA and upload to TestFlight
+          IPA_PATH=\$(find build/export -name "*.ipa" | head -n 1)
+          echo "Found IPA at: \$IPA_PATH"
+
           xcrun altool --upload-app \
             --type ios \
-            --file App.ipa \
+            --file "\$IPA_PATH" \
             --apple-id "6832358757" \
             --bundle-id "com.flyrightcopilot.flyrightcopilot" \
             --apiKey "$KEY_ID" \
