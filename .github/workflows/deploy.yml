@@ -33,56 +33,89 @@ jobs:
         working-directory: flyright-web/ios/App
         run: pod install --repo-update
 
-      - name: Set up Apple App Store Connect API Key
-        run: |
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
-          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
-
-      - name: Build, Code Sign, and Upload to TestFlight
+      - name: Build, Sign, and Upload to TestFlight
         working-directory: flyright-web/ios/App
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          TEAM_ID: "2B6P9Y533J"
+          BUNDLE_ID: "com.flyrightcopilot.flyrightcopilot"
+          APPLE_ID: "6832358757"
         run: |
-          # 1. Update project and Info.plist bundle identifier
-          plutil -replace CFBundleIdentifier -string "com.flyrightcopilot.flyrightcopilot" App/Info.plist || true
+          set -e
 
-          # 2. Create the App Store Connect API JSON configuration for Fastlane
-          cat <<EOF > fastlane_api_key.json
-          {
-            "key_id": "$KEY_ID",
-            "issuer_id": "$ISSUER_ID",
-            "key_filepath": "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8",
-            "in_house": false
-          }
+          # 1. Align Info.plist Bundle Identifier
+          plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
+
+          # 2. Setup API Key file
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
+
+          # 3. Create a Fastlane Fastfile with explicit team settings
+          mkdir -p fastlane
+          cat << 'EOF' > fastlane/Fastfile
+          default_platform(:ios)
+
+          platform :ios do
+            desc "Build, sign, and upload to TestFlight"
+            lane :release do
+              api_key = app_store_connect_api_key(
+                key_id: ENV["KEY_ID"],
+                issuer_id: ENV["ISSUER_ID"],
+                key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV['KEY_ID']}.p8"),
+                in_house: false
+              )
+
+              # Create and configure temporary keychain
+              create_keychain(
+                name: "ci_keychain",
+                password: "build_password_123",
+                default_keychain: true,
+                unlock: true,
+                timeout: 3600,
+                lock_when_sleeps: false
+              )
+
+              # Fetch or generate Distribution Certificate
+              get_certificates(
+                api_key: api_key,
+                keychain_name: "ci_keychain",
+                keychain_password: "build_password_123"
+              )
+
+              # Fetch or generate App Store Provisioning Profile
+              get_provisioning_profile(
+                api_key: api_key,
+                app_identifier: ENV["BUNDLE_ID"],
+                force: true
+              )
+
+              # Build and package the signed IPA
+              build_app(
+                workspace: "App.xcworkspace",
+                scheme: "App",
+                clean: true,
+                export_method: "app-store",
+                export_options: {
+                  signingStyle: "manual",
+                  teamID: ENV["TEAM_ID"],
+                  uploadSymbols: true
+                },
+                xcargs: "PRODUCT_BUNDLE_IDENTIFIER=#{ENV['BUNDLE_ID']} IPHONEOS_DEPLOYMENT_TARGET=15.0"
+              )
+
+              # Upload directly to TestFlight
+              upload_to_testflight(
+                api_key: api_key,
+                app_identifier: ENV["BUNDLE_ID"],
+                apple_id: ENV["APPLE_ID"],
+                skip_waiting_for_build_processing: true
+              )
+            end
+          end
           EOF
 
-          # 3. Create a temporary keychain to hold the certificate
-          security create-keychain -p "" build.keychain
-          security list-keychains -s build.keychain $(security list-keychains | tr -d '"')
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings -lut 3600 build.keychain
-
-          # 4. Fetch/Generate Apple Distribution Certificate & Provisioning Profile
-          fastlane cert --api_key_path fastlane_api_key.json --keychain_path build.keychain --keychain_password ""
-          fastlane sigh --api_key_path fastlane_api_key.json -a "com.flyrightcopilot.flyrightcopilot" --skip_install false
-
-          # 5. Build, sign, and package the IPA using gym
-          fastlane gym \
-            --workspace App.xcworkspace \
-            --scheme App \
-            --clean \
-            --output_directory "build/export" \
-            --output_name "App.ipa" \
-            --export_method "app-store" \
-            --xcargs "PRODUCT_BUNDLE_IDENTIFIER=com.flyrightcopilot.flyrightcopilot IPHONEOS_DEPLOYMENT_TARGET=15.0"
-
-          # 6. Upload directly to TestFlight using pilot
-          fastlane pilot upload \
-            --api_key_path fastlane_api_key.json \
-            --ipa "build/export/App.ipa" \
-            --apple_id "6832358757" \
-            --app_identifier "com.flyrightcopilot.flyrightcopilot" \
-            --skip_waiting_for_build_processing true
+          # 4. Execute the Fastlane release lane
+          bundle exec fastlane release || fastlane release
