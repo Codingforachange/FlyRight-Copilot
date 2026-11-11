@@ -44,7 +44,7 @@ jobs:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # 1. Archive the workspace
+          # 1. Archive workspace with iOS 15 deployment target
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination "generic/platform=iOS" \
@@ -53,13 +53,13 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          # 2. Package the app payload directly into an IPA container
+          # 2. Package into IPA container
           mkdir -p build/export/Payload
           cp -r build/App.xcarchive/Products/Applications/App.app build/export/Payload/
           cd build/export
           zip -qr App.ipa Payload
 
-          # 3. Upload directly to TestFlight via Apple's App Store Connect API
+          # 3. Stream upload directly to TestFlight via App Store Connect API
           xcrun altool --upload-app \
             --type ios \
             --file App.ipa \
