@@ -39,65 +39,50 @@ jobs:
           echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
 
-      - name: Build iOS Archive, Sign, and Upload to TestFlight
+      - name: Build, Code Sign, and Upload to TestFlight
         working-directory: flyright-web/ios/App
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # 1. Align Info.plist Bundle Identifier
+          # 1. Update project and Info.plist bundle identifier
           plutil -replace CFBundleIdentifier -string "com.flyrightcopilot.flyrightcopilot" App/Info.plist || true
 
-          # 2. Build the Xcode Archive
-          xcodebuild -workspace App.xcworkspace \
-            -scheme App \
-            -destination "generic/platform=iOS" \
-            -archivePath "build/App.xcarchive" \
-            PRODUCT_BUNDLE_IDENTIFIER="com.flyrightcopilot.flyrightcopilot" \
-            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
-            archive \
-            CODE_SIGNING_ALLOWED=NO
-
-          # 3. Create Export Options Plist
-          cat <<EOF > exportOptions.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>destination</key>
-              <string>export</string>
-              <key>method</key>
-              <string>app-store-connect</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-              <key>stripSwiftSymbols</key>
-              <true/>
-              <key>teamID</key>
-              <string>2B6P9Y533J</string>
-              <key>uploadSymbols</key>
-              <true/>
-          </dict>
-          </plist>
+          # 2. Create the App Store Connect API JSON configuration for Fastlane
+          cat <<EOF > fastlane_api_key.json
+          {
+            "key_id": "$KEY_ID",
+            "issuer_id": "$ISSUER_ID",
+            "key_filepath": "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8",
+            "in_house": false
+          }
           EOF
 
-          # 4. Export the archive with automatic provisioning to inject embedded.mobileprovision
-          xcodebuild -exportArchive \
-            -archivePath "build/App.xcarchive" \
-            -exportPath "build/export" \
-            -exportOptionsPlist exportOptions.plist \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8" \
-            -authenticationKeyID "$KEY_ID" \
-            -authenticationKeyIssuerID "$ISSUER_ID"
+          # 3. Create a temporary keychain to hold the certificate
+          security create-keychain -p "" build.keychain
+          security list-keychains -s build.keychain $(security list-keychains | tr -d '"')
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings -lut 3600 build.keychain
 
-          # 5. Locate the exported IPA and upload to TestFlight
-          IPA_PATH=\$(find build/export -name "*.ipa" | head -n 1)
-          echo "Found IPA at: \$IPA_PATH"
+          # 4. Fetch/Generate Apple Distribution Certificate & Provisioning Profile
+          fastlane cert --api_key_path fastlane_api_key.json --keychain_path build.keychain --keychain_password ""
+          fastlane sigh --api_key_path fastlane_api_key.json -a "com.flyrightcopilot.flyrightcopilot" --skip_install false
 
-          xcrun altool --upload-app \
-            --type ios \
-            --file "\$IPA_PATH" \
-            --apple-id "6832358757" \
-            --bundle-id "com.flyrightcopilot.flyrightcopilot" \
-            --apiKey "$KEY_ID" \
-            --apiIssuer "$ISSUER_ID"
+          # 5. Build, sign, and package the IPA using gym
+          fastlane gym \
+            --workspace App.xcworkspace \
+            --scheme App \
+            --clean \
+            --output_directory "build/export" \
+            --output_name "App.ipa" \
+            --export_method "app-store" \
+            --xcargs "PRODUCT_BUNDLE_IDENTIFIER=com.flyrightcopilot.flyrightcopilot IPHONEOS_DEPLOYMENT_TARGET=15.0"
+
+          # 6. Upload directly to TestFlight using pilot
+          fastlane pilot upload \
+            --api_key_path fastlane_api_key.json \
+            --ipa "build/export/App.ipa" \
+            --apple_id "6832358757" \
+            --app_identifier "com.flyrightcopilot.flyrightcopilot" \
+            --skip_waiting_for_build_processing true
