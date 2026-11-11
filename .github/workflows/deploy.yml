@@ -44,24 +44,30 @@ jobs:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # 1. Archive workspace with iOS 15 deployment target
+          # 1. Update Info.plist and project bundle identifier to match App Store Connect
+          plutil -replace CFBundleIdentifier -string "com.flyrightcopilot.flyrightcopilot" App/Info.plist || true
+
+          # 2. Archive workspace with iOS 15 deployment target and explicit bundle ID
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination "generic/platform=iOS" \
             -archivePath "build/App.xcarchive" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.flyrightcopilot.flyrightcopilot" \
             IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          # 2. Package into IPA container
+          # 3. Package into IPA container
           mkdir -p build/export/Payload
           cp -r build/App.xcarchive/Products/Applications/App.app build/export/Payload/
           cd build/export
           zip -qr App.ipa Payload
 
-          # 3. Stream upload directly to TestFlight via App Store Connect API
+          # 4. Upload directly to TestFlight using exact Apple ID and Bundle ID
           xcrun altool --upload-app \
             --type ios \
             --file App.ipa \
+            --apple-id "6832358757" \
+            --bundle-id "com.flyrightcopilot.flyrightcopilot" \
             --apiKey "$KEY_ID" \
             --apiIssuer "$ISSUER_ID"
