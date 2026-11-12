@@ -14,7 +14,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: flyright-web/package-lock.json
 
       - name: Install dependencies
@@ -25,19 +25,34 @@ jobs:
         working-directory: flyright-web
         run: npm run build
 
-      - name: Sync Capacitor iOS Assets
+      - name: Sync Capacitor iOS assets
         working-directory: flyright-web
         run: npx cap copy ios
 
-      - name: Install Pods with CDN Repo Update
+      - name: Install CocoaPods with CDN Repo Update
         working-directory: flyright-web/ios/App
         run: pod install --repo-update
 
-      - name: Set up Apple App Store Connect API Key
+      - name: Set up App Store Connect API Key
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
           echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
+
+      - name: Import Apple Distribution Certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          security create-keychain -p "temp_keychain_pass" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "temp_keychain_pass" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_keychain_pass" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
 
       - name: Build, Export, and Upload to TestFlight
         working-directory: flyright-web/ios/App
@@ -50,20 +65,20 @@ jobs:
         run: |
           set -e
 
-          # 1. Ensure the bundle identifier matches App Store Connect exactly
+          # 1. Ensure the Bundle Identifier matches App Store Connect exactly
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
 
-          # 2. Build the Xcode archive (archive step succeeds 100% of the time)
+          # 2. Build the Xcode archive (without code signing during the build phase)
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
-            -destination "generic/platform=iOS" \
+            -destination 'generic/platform=iOS' \
             -archivePath "build/App.xcarchive" \
             PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
             IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          # 3. Create ExportOptions with upload destination
+          # 3. Create ExportOptions.plist with strict XML formatting
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -85,7 +100,7 @@ jobs:
           </plist>
           EOF
 
-          # 4. Export and upload in a single native pass using Apple's API Key authentication
+          # 4. Export and upload to TestFlight in one step using your App Store Connect API Key
           xcodebuild -exportArchive \
             -archivePath "build/App.xcarchive" \
             -exportOptionsPlist exportOptions.plist \
