@@ -39,14 +39,19 @@ jobs:
           echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
 
-      - name: Import Apple Distribution Certificate
+      - name: Import Apple Distribution Certificate & Provisioning Profile
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
         run: |
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+
           security create-keychain -p "temp_keychain_pass" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "temp_keychain_pass" "$KEYCHAIN_PATH"
@@ -54,21 +59,23 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_keychain_pass" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
       - name: Build, Export, and Upload to TestFlight
         working-directory: flyright-web/ios/App
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          TEAM_ID: "2B6P9Y533J"
+          TEAM_ID: "3J5H7Y862Q"
           BUNDLE_ID: "com.flyrightcopilot.flyrightcopilot"
-          APPLE_ID: "6832358757"
         run: |
           set -e
 
           # 1. Ensure the Bundle Identifier matches App Store Connect exactly
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
 
-          # 2. Build the Xcode archive (without code signing during the build phase)
+          # 2. Build the Xcode archive (unsigned during archive phase)
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -destination 'generic/platform=iOS' \
@@ -78,7 +85,7 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
-          # 3. Create ExportOptions.plist with strict XML formatting
+          # 3. Create ExportOptions.plist with manual signing
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -89,7 +96,14 @@ jobs:
               <key>method</key>
               <string>app-store-connect</string>
               <key>signingStyle</key>
-              <string>automatic</string>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string>Apple Distribution</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>$BUNDLE_ID</key>
+                  <string>FlyRight App Store</string>
+              </dict>
               <key>teamID</key>
               <string>$TEAM_ID</string>
               <key>uploadSymbols</key>
@@ -100,11 +114,10 @@ jobs:
           </plist>
           EOF
 
-          # 4. Export and upload to TestFlight in one step using your App Store Connect API Key
+          # 4. Export and upload to TestFlight using your App Store Connect API Key
           xcodebuild -exportArchive \
             -archivePath "build/App.xcarchive" \
             -exportOptionsPlist exportOptions.plist \
-            -allowProvisioningUpdates \
             -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8" \
             -authenticationKeyID "$KEY_ID" \
             -authenticationKeyIssuerID "$ISSUER_ID"
