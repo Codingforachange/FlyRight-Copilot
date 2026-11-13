@@ -50,8 +50,11 @@ jobs:
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          echo "$BUILD_CERTIFICATE_BASE64" | tr -d '\n\r ' | base64 -d > "$CERTIFICATE_PATH"
-          echo "$BUILD_PROVISION_PROFILE_BASE64" | tr -d '\n\r ' | base64 -d > "$PP_PATH"
+          printf '%s' "$BUILD_CERTIFICATE_BASE64" | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$CERTIFICATE_PATH"
+          printf '%s' "$BUILD_PROVISION_PROFILE_BASE64" | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$PP_PATH"
+
+          echo "Certificate bytes: $(wc -c < "$CERTIFICATE_PATH")"
+          echo "Profile bytes: $(wc -c < "$PP_PATH")"
 
           security create-keychain -p "temp_keychain_pass" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -60,8 +63,16 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_keychain_pass" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
-          security cms -D -i "$PP_PATH" > "$RUNNER_TEMP/profile.plist"
-          UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/profile.plist")
+          python3 -c '
+          import re, plistlib, sys
+          data = open(sys.argv[1], "rb").read()
+          m = re.search(b"<\\?xml.*?</plist>", data, re.S)
+          assert m, "No plist XML found inside mobileprovision"
+          pl = plistlib.loads(m.group(0))
+          print(pl["UUID"])
+          ' "$PP_PATH" > "$RUNNER_TEMP/uuid.txt"
+
+          UUID=$(cat "$RUNNER_TEMP/uuid.txt")
           echo "Decoded Profile UUID: $UUID"
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
