@@ -58,24 +58,23 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_keychain_pass" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
-          python3 -c '
-          import re, plistlib, sys
-          data = open(sys.argv[1], "rb").read()
-          m = re.search(b"<\\?xml.*?</plist>", data, re.S)
-          pl = plistlib.loads(m.group(0))
-          print("PROFILE_UUID=" + pl["UUID"])
-          print("PROFILE_NAME=" + pl["Name"])
-          ' "$PP_PATH" >> $GITHUB_ENV
+          security cms -D -i "$PP_PATH" > "$RUNNER_TEMP/profile.plist"
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$RUNNER_TEMP/profile.plist")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile.plist")
+          PROFILE_TEAM=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$RUNNER_TEMP/profile.plist")
+          PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$RUNNER_TEMP/profile.plist")
+
+          echo "=== PROFILE DETAILS ==="
+          echo "UUID: $PROFILE_UUID"
+          echo "Name: $PROFILE_NAME"
+          echo "Team: $PROFILE_TEAM"
+          echo "AppID: $PROFILE_APP_ID"
+
+          echo "PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
+          echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          UUID=$(python3 -c '
-          import re, plistlib, sys
-          data = open(sys.argv[1], "rb").read()
-          m = re.search(b"<\\?xml.*?</plist>", data, re.S)
-          print(plistlib.loads(m.group(0))["UUID"])
-          ' "$PP_PATH")
-          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID.mobileprovision"
-          echo "Installed UUID: $UUID"
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID.mobileprovision"
 
       - name: Build, Export, and Upload to TestFlight
         working-directory: flyright-web/ios/App
@@ -86,45 +85,23 @@ jobs:
           BUNDLE_ID: "com.flyrightcopilot.flyrightcopilot"
         run: |
           set -e
-          echo "Using Profile Name: '$PROFILE_NAME' ($PROFILE_UUID)"
-
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
 
-          # Configure manual signing + DEVELOPMENT_TEAM ONLY on the App target (never on Pods)
-          python3 -c '
-          import re, os
-          p = "App.xcodeproj/project.pbxproj"
-          txt = open(p).read()
-          team = os.environ["TEAM_ID"]
-          bundle = os.environ["BUNDLE_ID"]
-          prof_uuid = os.environ["PROFILE_UUID"]
-          prof_name = os.environ["PROFILE_NAME"]
-
-          txt = re.sub(r"CODE_SIGN_STYLE = Automatic;", "CODE_SIGN_STYLE = Manual;", txt)
-          txt = re.sub(r"PRODUCT_BUNDLE_IDENTIFIER = [^;]*;", f"PRODUCT_BUNDLE_IDENTIFIER = {bundle};", txt)
-
-          def inject_signing(m):
-              block = m.group(0)
-              if "INFOPLIST_FILE = App/Info.plist;" in block:
-                  block = re.sub(r"DEVELOPMENT_TEAM = [^;]*;\n?", "", block)
-                  block = re.sub(r"CODE_SIGN_STYLE = [^;]*;\n?", "", block)
-                  block = re.sub(r"CODE_SIGN_IDENTITY = [^;]*;\n?", "", block)
-                  block = re.sub(r"\"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]\" = [^;]*;\n?", "", block)
-                  block = re.sub(r"PROVISIONING_PROFILE = [^;]*;\n?", "", block)
-                  block = re.sub(r"PROVISIONING_PROFILE_SPECIFIER = [^;]*;\n?", "", block)
-                  add = (
-                      f"\t\t\t\tDEVELOPMENT_TEAM = {team};\n"
-                      f"\t\t\t\tCODE_SIGN_STYLE = Manual;\n"
-                      f"\t\t\t\tCODE_SIGN_IDENTITY = \"Apple Distribution\";\n"
-                      f"\t\t\t\t\"CODE_SIGN_IDENTITY[sdk=iphoneos*]\" = \"Apple Distribution\";\n"
-                      f"\t\t\t\tPROVISIONING_PROFILE = \"{prof_uuid}\";\n"
-                      f"\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"{prof_name}\";\n"
-                  )
-                  block = block.replace("INFOPLIST_FILE = App/Info.plist;", "INFOPLIST_FILE = App/Info.plist;\n" + add)
-              return block
-
-          txt = re.sub(r"buildSettings = \{[^}]*\};", inject_signing, txt, flags=re.S)
-          open(p, "w").write(txt)
+          # Patch App target ONLY in project.pbxproj using PlistBuddy/sed without multi-line Python
+          ruby -e '
+            require "xcodeproj"
+            proj = Xcodeproj::Project.open("App.xcodeproj")
+            target = proj.targets.find { |t| t.name == "App" }
+            target.build_configurations.each do |config|
+              config.build_settings["DEVELOPMENT_TEAM"] = ENV["TEAM_ID"]
+              config.build_settings["PRODUCT_BUNDLE_IDENTIFIER"] = ENV["BUNDLE_ID"]
+              config.build_settings["CODE_SIGN_STYLE"] = "Manual"
+              config.build_settings["CODE_SIGN_IDENTITY"] = "Apple Distribution"
+              config.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = "Apple Distribution"
+              config.build_settings["PROVISIONING_PROFILE"] = ENV["PROFILE_UUID"]
+              config.build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["PROFILE_NAME"]
+            end
+            proj.save
           '
 
           xcodebuild -workspace App.xcworkspace \
