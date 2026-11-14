@@ -58,16 +58,24 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_keychain_pass" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
+          python3 -c '
+          import re, plistlib, sys
+          data = open(sys.argv[1], "rb").read()
+          m = re.search(b"<\\?xml.*?</plist>", data, re.S)
+          pl = plistlib.loads(m.group(0))
+          print("PROFILE_UUID=" + pl["UUID"])
+          print("PROFILE_NAME=" + pl["Name"])
+          ' "$PP_PATH" >> $GITHUB_ENV
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           UUID=$(python3 -c '
           import re, plistlib, sys
           data = open(sys.argv[1], "rb").read()
           m = re.search(b"<\\?xml.*?</plist>", data, re.S)
           print(plistlib.loads(m.group(0))["UUID"])
           ' "$PP_PATH")
-          echo "Installed Profile UUID: $UUID"
-
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID.mobileprovision"
+          echo "Installed UUID: $UUID"
 
       - name: Build, Export, and Upload to TestFlight
         working-directory: flyright-web/ios/App
@@ -78,22 +86,27 @@ jobs:
           BUNDLE_ID: "com.flyrightcopilot.flyrightcopilot"
         run: |
           set -e
+          echo "Using Profile Name: '$PROFILE_NAME' ($PROFILE_UUID)"
 
           # 1. Ensure the Bundle Identifier matches App Store Connect exactly
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
 
-          # 2. Build unsigned Xcode archive (signing happens during export)
+          # 2. Build signed Xcode archive using the exact installed profile UUID
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "build/App.xcarchive" \
             PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             IPHONEOS_DEPLOYMENT_TARGET=15.0 \
-            archive \
-            CODE_SIGNING_ALLOWED=NO
+            archive
 
-          # 3. Create ExportOptions.plist with destination=export (no Apple ID login required)
+          # 3. Create ExportOptions.plist using the exact Profile Name read from the file
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -110,7 +123,7 @@ jobs:
               <key>provisioningProfiles</key>
               <dict>
                   <key>$BUNDLE_ID</key>
-                  <string>FlyRight App Store</string>
+                  <string>$PROFILE_NAME</string>
               </dict>
               <key>teamID</key>
               <string>$TEAM_ID</string>
@@ -122,7 +135,7 @@ jobs:
           </plist>
           EOF
 
-          # 4. Export signed .ipa locally using imported cert + committed profile
+          # 4. Export signed .ipa locally
           xcodebuild -exportArchive \
             -archivePath "build/App.xcarchive" \
             -exportPath "build/export" \
@@ -137,3 +150,4 @@ jobs:
             --file "$IPA_PATH" \
             --apiKey "$KEY_ID" \
             --apiIssuer "$ISSUER_ID"
+
