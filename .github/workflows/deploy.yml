@@ -79,8 +79,10 @@ jobs:
         run: |
           set -e
 
+          # 1. Ensure the Bundle Identifier matches App Store Connect exactly
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" App/Info.plist || true
 
+          # 2. Build unsigned Xcode archive (signing happens during export)
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -91,13 +93,14 @@ jobs:
             archive \
             CODE_SIGNING_ALLOWED=NO
 
+          # 3. Create ExportOptions.plist with destination=export (no Apple ID login required)
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>destination</key>
-              <string>upload</string>
+              <string>export</string>
               <key>method</key>
               <string>app-store-connect</string>
               <key>signingStyle</key>
@@ -119,9 +122,18 @@ jobs:
           </plist>
           EOF
 
+          # 4. Export signed .ipa locally using imported cert + committed profile
           xcodebuild -exportArchive \
             -archivePath "build/App.xcarchive" \
-            -exportOptionsPlist exportOptions.plist \
-            -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8" \
-            -authenticationKeyID "$KEY_ID" \
-            -authenticationKeyIssuerID "$ISSUER_ID"
+            -exportPath "build/export" \
+            -exportOptionsPlist exportOptions.plist
+
+          # 5. Locate the exported .ipa and upload to TestFlight via App Store Connect API Key
+          IPA_PATH=$(find build/export -name "*.ipa" | head -n 1)
+          echo "Uploading IPA: $IPA_PATH"
+
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
